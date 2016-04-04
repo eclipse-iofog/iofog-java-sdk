@@ -24,8 +24,16 @@
         <processorPath useClasspath="true" />
         <module name="iotracks-java-sdk" />
       </profile>
+      <profile default="false" name="Annotation profile for container-java-sdk" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="container-java-sdk" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="container-java-sdk" target="1.8" />
       <module name="iotracks-java-sdk" target="1.8" />
     </bytecodeTargetLevel>
   </component>
