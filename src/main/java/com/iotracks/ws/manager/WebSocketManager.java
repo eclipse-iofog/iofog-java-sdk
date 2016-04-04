@@ -66,7 +66,15 @@ public class WebSocketManager {
     }
 
     public void sendMessage(ChannelHandlerContext pCtx, byte[] pData){
-        byte[] header = new byte[]{OPCODE_MSG, (byte)pData.length};
+        //byte[] header = new byte[]{OPCODE_MSG, (byte)pData.length};
+        byte[] header = new byte[5];
+        byte[] bLenArr = ByteUtils.integerToBytes(pData.length);
+        header[0] = OPCODE_MSG;
+        header[1] = bLenArr[0];
+        header[2] = bLenArr[1];
+        header[3] = bLenArr[2];
+        header[4] = bLenArr[3];
+
         byte[] msg = new byte[header.length + pData.length];
         int i = 0;
         for(byte b : header){
@@ -99,7 +107,7 @@ public class WebSocketManager {
     public void sendControl(ChannelHandlerContext pCtx){
         //sendBinaryFrame(pCtx, new byte[]{OPCODE_CONTROL_SIGNAL});
         ByteBuf buffer1 = pCtx.alloc().buffer();
-        buffer1.writeByte(OPCODE_ACK);
+        buffer1.writeByte(OPCODE_CONTROL_SIGNAL);
         buffer1.writeByte(Byte.SIZE);
         pCtx.channel().writeAndFlush(new BinaryWebSocketFrame(buffer1));
         Integer cnt = mControlSignalSendContextMap.get(pCtx);
@@ -114,7 +122,7 @@ public class WebSocketManager {
         buffer1.writeByte(OPCODE_RECEIPT.intValue());
         //send Length
         int msgIdLength = pMessageId.length();
-        buffer1.writeByte(msgIdLength);
+        buffer1.writeBytes(ByteUtils.integerToBytes(msgIdLength));
         buffer1.writeByte(Long.BYTES);
 
         //Send opcode, id and timestamp
