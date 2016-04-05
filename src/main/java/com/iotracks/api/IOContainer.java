@@ -109,28 +109,26 @@ public class IOContainer {
      *
      * @param wsType - WebSocket type for connection
      * @param url - url for request
-     * @param containerId - Container's ID
      * @param listener - listener for WebSocket communication with ioFabric
      *
      */
-    private void openWebSocketConnection(WebSocketType wsType, String url, String containerId, IOFabricWSAPIListener listener){
+    private void openWebSocketConnection(WebSocketType wsType, String url, IOFabricWSAPIListener listener){
         this.wsType = wsType;
-        handler = new IOContainerWSAPIHandler(listener, getURI(url, containerId), containerId, wsType);
+        handler = new IOContainerWSAPIHandler(listener, getURI(url), elementID, wsType);
         new Thread(new IOWebSocketConnection(handler, ssl, server, port)).start();
     }
 
     /**
      * Method sends IOMessage to ioFabric in case Message WebSocket connection is open.
      *
-     * @param containerId - Container's ID
      * @param message - IOMessage to send
      *
      */
-    public void sendMessageToWebSocket(String containerId, IOMessage message){
+    public void sendMessageToWebSocket(IOMessage message){
         if(message != null) {
             message.setPublisher(elementID);
             if(handler != null && wsType == WebSocketType.MESSAGE_WEB_SOCKET) {
-                handler.sendMessage(containerId, message);
+                handler.sendMessage(elementID, message);
             } else {
                 log.warning("Message can be sent to ioFabric only if MessageWebSocket connection is established.");
             }
@@ -140,23 +138,21 @@ public class IOContainer {
     /**
      * Method sends request for current Container's configurations.
      *
-     * @param containerId - Container's ID
      * @param listener - listener for REST communication with ioFabric
      *
      */
-    public void fetchContainerConfig(String containerId, IOFabricRESTAPIListener listener){
-        sendRequest(GET_CONFIG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, containerId).build(), listener);
+    public void fetchContainerConfig(IOFabricRESTAPIListener listener){
+        sendRequest(GET_CONFIG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, elementID).build(), listener);
     }
 
     /**
      * Method sends request for all Container's unread messages.
      *
-     * @param containerId - Container's ID
      * @param listener - listener for REST communication with ioFabric
      *
      */
-    public void fetchNextMessage(String containerId , IOFabricRESTAPIListener listener){
-        sendRequest(GET_NEXT_MSG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, containerId).build(), listener);
+    public void fetchNextMessage(IOFabricRESTAPIListener listener){
+        sendRequest(GET_NEXT_MSG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, elementID).build(), listener);
     }
 
     /**
@@ -176,16 +172,15 @@ public class IOContainer {
     /**
      * Method sends request for all Container's messages for specified publishers and period.
      *
-     * @param containerId - Container's ID
      * @param startDate - start date of period
      * @param endDate - end date of period
      * @param publishers - set of publisher's IDs
      * @param listener - listener for REST communication with ioFabric
      *
      */
-    public void fetchMessagesByQuery(String containerId, Date startDate, Date endDate,
+    public void fetchMessagesByQuery(Date startDate, Date endDate,
                                                 Set<String> publishers, IOFabricRESTAPIListener listener){
-        JsonObject json = Json.createObjectBuilder().add(ID_PARAM_NAME, containerId)
+        JsonObject json = Json.createObjectBuilder().add(ID_PARAM_NAME, elementID)
                 .add(TIMEFRAME_START_PARAM_NAME, startDate.getTime())
                 .add(TIMEFRAME_END_PARAM_NAME, endDate.getTime())
                 .add(PUBLISHERS_PARAM_NAME, publishers.toString())
@@ -196,41 +191,38 @@ public class IOContainer {
     /**
      * Method opens a Control WebSocket connection to ioFabric in a separate thread.
      *
-     * @param containerId - Container's ID
      * @param listener - listener for WebSocket communication with ioFabric
      *
      */
-    public void openControlWebSocket(String containerId, IOFabricWSAPIListener listener){
-        openWebSocketConnection(WebSocketType.CONTROL_WEB_SOCKET, GET_CONTROL_WEB_SOCKET_LOCAL_API, containerId, listener);
+    public void openControlWebSocket(IOFabricWSAPIListener listener){
+        openWebSocketConnection(WebSocketType.CONTROL_WEB_SOCKET, GET_CONTROL_WEB_SOCKET_LOCAL_API, listener);
     }
 
     /**
      * Method opens a Message WebSocket connection to ioFabric in a separate thread.
      *
-     * @param containerId - Container's ID
      * @param listener - listener for WebSocket communication with ioFabric
      *
      */
-    public void openMessageWebSocket(String containerId, IOFabricWSAPIListener listener){
-        openWebSocketConnection(WebSocketType.MESSAGE_WEB_SOCKET, GET_MSG_WEB_SOCKET_LOCAL_API, containerId, listener);
+    public void openMessageWebSocket(IOFabricWSAPIListener listener){
+        openWebSocketConnection(WebSocketType.MESSAGE_WEB_SOCKET, GET_MSG_WEB_SOCKET_LOCAL_API, listener);
     }
 
     /**
      * Method constructs a URL for request.
      *
      * @param url - url for request
-     * @param containerId - Container's ID
      *
      * @return URI
      */
-    private URI getURI(String url, String containerId){
+    private URI getURI(String url){
         StringBuilder urlBuilder = new StringBuilder();
         if (ssl) {
             urlBuilder.append("wss://");
         } else {
             urlBuilder.append("ws://");
         }
-        urlBuilder.append(server).append(":").append(port).append(url).append(containerId);
+        urlBuilder.append(server).append(":").append(port).append(url).append(elementID);
         try {
             return new URI(urlBuilder.toString());
         } catch (URISyntaxException e){
