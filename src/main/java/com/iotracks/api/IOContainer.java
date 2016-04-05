@@ -47,39 +47,39 @@ public class IOContainer {
     private String server;
     private int port;
     private boolean ssl;
+    private String elementID;
     private IOContainerWSAPIHandler handler;
     private WebSocketType wsType;
 
     /**
      * @param host - the server name or ip address (by default "router")
      * @param port - the listening port (bye default 54321)
-     * @param ssl - indicates if connection should be established through secured protocol
      */
-    public IOContainer(String host, int port, boolean ssl){
+    public IOContainer(String host, int port){
         if(!StringUtil.isNullOrEmpty(host)) {
             this.server = host;
         } else {
             this.server = "iofabric";
         }
         this.port = port!=0 ? port : 54321;
-        this.ssl = ssl;
+        this.ssl = System.getProperty("ssl") != null;
+        this.elementID = System.getProperty("SELFNAME");
     }
 
     /**
      * Method sends REST request to ioFabric based on parameters.
      *
      * @param url - request url
-     * @param httpMethod - type of HTTP method for request
      * @param content - json representation of request's content
      * @param listener - listener for REST communication with ioFabric
      *
      */
-    private void sendRequest(String url, HttpMethod httpMethod, JsonObject content, IOFabricRESTAPIListener listener){
+    private void sendRequest(String url, JsonObject content, IOFabricRESTAPIListener listener){
         IOContainerRESTAPIHandler handler = new IOContainerRESTAPIHandler(listener);
         IOFabricAPIClient localAPIClient = new IOFabricAPIClient(handler, ssl);
         Channel channel = localAPIClient.connect(server, port);
         if(channel != null){
-            channel.write(getRequest(url, httpMethod));
+            channel.write(getRequest(url, HttpMethod.POST));
             channel.write(content);
             channel.flush();
             try {
@@ -127,10 +127,13 @@ public class IOContainer {
      *
      */
     public void sendMessageToWebSocket(String containerId, IOMessage message){
-        if(handler != null && wsType == WebSocketType.MESSAGE_WEB_SOCKET) {
-            handler.sendMessage(containerId, message);
-        } else {
-            log.warning("Message can be sent to ioFabric only if MessageWebSocket connection is established.");
+        if(message != null) {
+            message.setPublisher(elementID);
+            if(handler != null && wsType == WebSocketType.MESSAGE_WEB_SOCKET) {
+                handler.sendMessage(containerId, message);
+            } else {
+                log.warning("Message can be sent to ioFabric only if MessageWebSocket connection is established.");
+            }
         }
     }
 
@@ -142,8 +145,7 @@ public class IOContainer {
      *
      */
     public void fetchContainerConfig(String containerId, IOFabricRESTAPIListener listener){
-        sendRequest(GET_CONFIG_REST_LOCAL_API, HttpMethod.GET,
-                Json.createObjectBuilder().add(ID_PARAM_NAME, containerId).build(), listener);
+        sendRequest(GET_CONFIG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, containerId).build(), listener);
     }
 
     /**
@@ -154,8 +156,7 @@ public class IOContainer {
      *
      */
     public void fetchNextMessage(String containerId , IOFabricRESTAPIListener listener){
-        sendRequest(GET_NEXT_MSG_REST_LOCAL_API, HttpMethod.GET,
-                Json.createObjectBuilder().add(ID_PARAM_NAME, containerId).build(), listener);
+        sendRequest(GET_NEXT_MSG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, containerId).build(), listener);
     }
 
     /**
@@ -166,7 +167,10 @@ public class IOContainer {
      *
      */
     public void pushNewMessage(IOMessage message , IOFabricRESTAPIListener listener){
-        sendRequest(POST_MSG_REST_LOCAL_API, HttpMethod.POST, message.getJson(), listener);
+        if(message != null) {
+            message.setPublisher(elementID);
+            sendRequest(POST_MSG_REST_LOCAL_API, message.getJson(), listener);
+        }
     }
 
     /**
@@ -186,7 +190,7 @@ public class IOContainer {
                 .add(TIMEFRAME_END_PARAM_NAME, endDate.getTime())
                 .add(PUBLISHERS_PARAM_NAME, publishers.toString())
                 .build();
-        sendRequest(GET_MSGS_QUERY_REST_LOCAL_API, HttpMethod.GET, json, listener);
+        sendRequest(GET_MSGS_QUERY_REST_LOCAL_API, json, listener);
     }
 
     /**
