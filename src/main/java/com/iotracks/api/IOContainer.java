@@ -59,7 +59,7 @@ public class IOContainer {
         if(!StringUtil.isNullOrEmpty(host)) {
             this.server = host;
         } else {
-            this.server = "router";
+            this.server = "iofabric";
         }
         this.port = port!=0 ? port : 54321;
         this.ssl = ssl;
