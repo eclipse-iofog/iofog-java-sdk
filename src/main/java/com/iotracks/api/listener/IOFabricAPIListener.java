@@ -36,8 +36,10 @@ public interface IOFabricAPIListener {
     /**
      * Method is triggered when Container receives message's receipt.
      *
+     * @param messageId - generated id of sent message
+     * @param timestamp - timestamp generated when message was received by ioFabric
      */
-    void onMessageReceipt();
+    void onMessageReceipt(String messageId, long timestamp);
 
     /**
      * Method is triggered when Container receives new configuration.
@@ -49,5 +51,5 @@ public interface IOFabricAPIListener {
     /**
      * Method is triggered when Container receives a signal about new configuration.
      */
-    void onNewConfig();
+    void onNewConfigSignal();
 }

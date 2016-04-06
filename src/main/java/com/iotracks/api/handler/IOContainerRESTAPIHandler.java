@@ -50,6 +50,7 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                     Map<String, String> configMap = new HashMap<>();
                     configJSON.keySet().forEach(key -> configMap.put(key, configJSON.getString(key)));
                     listener.onNewConfig(configMap);
+                    return;
                 }
                 if (json.containsKey(IOFabricResponseUtils.MESSAGES_FIELD_NAME)) {
                     JsonArray messagesJSON = json.getJsonArray(IOFabricResponseUtils.MESSAGES_FIELD_NAME);
@@ -60,6 +61,11 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                         }
                     });
                     listener.onMessages(messagesList);
+                    return;
+                }
+                if(json.containsKey(IOFabricResponseUtils.ID_FIELD_NAME) && json.containsKey(IOFabricResponseUtils.TIMESTAMP_FIELD_NAME)) {
+                    listener.onMessageReceipt(json.getString(IOFabricResponseUtils.ID_FIELD_NAME), Long.valueOf(json.getString(IOFabricResponseUtils.TIMESTAMP_FIELD_NAME)));
+                    return;
                 }
             }
         }
