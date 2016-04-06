@@ -9,8 +9,6 @@ import java.util.logging.Logger;
 /**
  * Utils class for convenient encoding and decoding for IOMessage
  *
- * Created by forte on 3/23/16.
- *
  * @author ilaryionava
  */
 public class IOMessageUtils {

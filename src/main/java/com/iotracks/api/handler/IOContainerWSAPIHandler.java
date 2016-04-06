@@ -1,9 +1,9 @@
 package com.iotracks.api.handler;
 
-import com.iotracks.utils.WebSocketType;
+import com.iotracks.api.listener.IOFabricAPIListener;
+import com.iotracks.utils.IOFabricLocalAPIURL;
 import com.iotracks.ws.manager.WebSocketManager;
 import com.iotracks.elements.IOMessage;
-import com.iotracks.api.listener.IOFabricWSAPIListener;
 import com.iotracks.ws.manager.listener.ClientWSManagerListener;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -16,8 +16,6 @@ import java.util.logging.Logger;
 /**
  * Containers's Handler for WebSocket transmissions with ioFabric.
  *
- * Created by forte on 3/28/16.
- *
  * @author ilaryionava
  */
 public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
@@ -28,10 +26,10 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
     private ChannelPromise handshakeFuture;
     private WebSocketManager wsManager;
     private String containerId;
-    private WebSocketType wsType;
-    private IOFabricWSAPIListener wsListener;
+    private IOFabricLocalAPIURL wsType;
+    private IOFabricAPIListener wsListener;
 
-    public IOContainerWSAPIHandler(IOFabricWSAPIListener listener, URI uri, String containerId, WebSocketType wsType){
+    public IOContainerWSAPIHandler(IOFabricAPIListener listener, URI uri, String containerId, IOFabricLocalAPIURL wsType){
         this.handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders());
         this.containerId = containerId;
         this.wsType = wsType;
@@ -63,10 +61,10 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
             handshaker.finishHandshake(ch, (FullHttpResponse) o);
             handshakeFuture.setSuccess();
             switch (wsType){
-                case CONTROL_WEB_SOCKET:
+                case GET_CONTROL_WEB_SOCKET_LOCAL_API:
                     wsManager.addControlContext(channelHandlerContext, containerId);
                     break;
-                case MESSAGE_WEB_SOCKET:
+                case GET_MSG_WEB_SOCKET_LOCAL_API:
                     wsManager.addMessageContext(channelHandlerContext, containerId);
                     break;
             }

@@ -7,8 +7,6 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 /**
  * Interface of listener for WebSocket Manager.
  *
- * Created by forte on 3/30/16.
- *
  * @author ilaryionava
  */
 public interface WebSocketManagerListener {

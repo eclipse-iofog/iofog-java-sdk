@@ -1,15 +1,16 @@
 package com.iotracks.ws.manager.listener;
 
-import com.iotracks.api.listener.IOFabricWSAPIListener;
+import com.iotracks.api.listener.IOFabricAPIListener;
 import com.iotracks.elements.IOMessage;
 import com.iotracks.utils.ByteUtils;
-import com.iotracks.utils.WebSocketType;
+import com.iotracks.utils.IOFabricLocalAPIURL;
 import com.iotracks.ws.manager.WebSocketManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.logging.Logger;
 
 /**
@@ -21,18 +22,16 @@ import java.util.logging.Logger;
  *    - In case of receiving MESSAGE from ioFabric, Container responds with ACKNOWLEDGE response.
  *    - In case of receiving MESSAGE_RECEIPT from ioFabric, Container responds with ACKNOWLEDGE response.
  *
- * Created by forte on 3/30/16.
- *
  * @author ilaryionava
  */
 public class ClientWSManagerListener implements WebSocketManagerListener {
 
     private static final Logger log = Logger.getLogger(ClientWSManagerListener.class.getName());
 
-    private IOFabricWSAPIListener wsListener;
-    private WebSocketType wsType;
+    private IOFabricAPIListener wsListener;
+    private IOFabricLocalAPIURL wsType;
 
-    public ClientWSManagerListener(IOFabricWSAPIListener listener, WebSocketType wsType){
+    public ClientWSManagerListener(IOFabricAPIListener listener, IOFabricLocalAPIURL wsType){
         this.wsListener = listener;
         this.wsType = wsType;
     }
@@ -48,17 +47,16 @@ public class ClientWSManagerListener implements WebSocketManagerListener {
             int readerIndex = content.readerIndex();
             content.getBytes(readerIndex, byteArray);
             byte opcode = byteArray[0];
-            if (opcode == WebSocketManager.OPCODE_CONTROL_SIGNAL.intValue() && wsType == WebSocketType.CONTROL_WEB_SOCKET
+            if (opcode == WebSocketManager.OPCODE_CONTROL_SIGNAL.intValue() && wsType == IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API
                 /*&& byteArray.length == 1*/) {
-                log.info("RECEIVED CONTROL SIGNAL from ioFabric: new Configuration is available. Sending ACKNOWLEDGE response");
+                wsListener.onNewConfig();
                 wsManager.sendAck(ctx);
-            } else if (opcode == WebSocketManager.OPCODE_MSG.intValue() && wsType == WebSocketType.MESSAGE_WEB_SOCKET) {
+            } else if (opcode == WebSocketManager.OPCODE_MSG.intValue() && wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
                 int totalMsgLength = ByteUtils.bytesToInteger(Arrays.copyOfRange(byteArray, 1, 5));
                 IOMessage message = new IOMessage(Arrays.copyOfRange(byteArray, 5, totalMsgLength));
-                // TODO: wsListener on Message Received ???
-                log.info("RECEIVED MESSAGE from ioFabric: sending ACKNOWLEDGE response.");
+                wsListener.onMessages(Collections.singletonList(message));
                 wsManager.sendAck(ctx);
-            } else if (opcode == WebSocketManager.OPCODE_RECEIPT.intValue() && wsType == WebSocketType.MESSAGE_WEB_SOCKET) {
+            } else if (opcode == WebSocketManager.OPCODE_RECEIPT.intValue() && wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
                 int size = byteArray[1];
                 int pos = 3;
                 String messageId = "";
@@ -74,8 +72,7 @@ public class ClientWSManagerListener implements WebSocketManagerListener {
                 IOMessage message = new IOMessage(wsManager.getMessage(ctx));
                 message.setId(messageId);
                 message.setTimestamp(timestamp);
-                wsListener.onSuccess(message);
-                log.info("RECEIVED MESSAGE RECEIPT from ioFabric: sending ACKNOWLEDGE response.");
+                wsListener.onMessageReceipt();
                 wsManager.sendAck(ctx);
             }
         }

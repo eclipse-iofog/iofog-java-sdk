@@ -8,20 +8,18 @@ import java.util.logging.Logger;
 /**
  * Creates a WebSocket connection to ioFabric in a separate thread.
  *
- * Created by forte on 3/31/16.
- *
  * @author ilaryionava
  */
-public class IOWebSocketConnection implements Runnable {
+public class IOWebSocketConnector implements Runnable {
 
-    private static final Logger log = Logger.getLogger(IOWebSocketConnection.class.getName());
+    private static final Logger log = Logger.getLogger(IOWebSocketConnector.class.getName());
 
     private IOContainerWSAPIHandler handler;
     private boolean ssl;
     private String host;
     private int port;
 
-    public IOWebSocketConnection(IOContainerWSAPIHandler handler, boolean ssl, String host, int port) {
+    public IOWebSocketConnector(IOContainerWSAPIHandler handler, boolean ssl, String host, int port) {
         this.handler = handler;
         this.ssl = ssl;
         this.host = host;
@@ -30,8 +28,8 @@ public class IOWebSocketConnection implements Runnable {
 
     @Override
     public void run() {
-        IOFabricAPIClient ioFabricAPIClient = new IOFabricAPIClient(handler, ssl);
-        Channel channel = ioFabricAPIClient.connect(host, port);
+        IOFabricAPIConnector ioFabricAPIConnector = new IOFabricAPIConnector(handler, ssl);
+        Channel channel = ioFabricAPIConnector.initConnection(host, port);
         try {
             handler.handshakeFuture().sync();
         } catch (InterruptedException e) {

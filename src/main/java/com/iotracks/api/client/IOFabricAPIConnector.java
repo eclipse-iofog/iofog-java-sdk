@@ -17,13 +17,11 @@ import java.util.logging.Logger;
 /**
  * Client to establish connection to ioFabric API.
  *
- * Created by ilaryionava on 3/24/16.
- *
  * @author ilaryionava
  */
-public class IOFabricAPIClient {
+public class IOFabricAPIConnector {
 
-    private static final Logger log = Logger.getLogger(IOFabricAPIClient.class.getName());
+    private static final Logger log = Logger.getLogger(IOFabricAPIConnector.class.getName());
 
     protected Bootstrap bootstrap;
     protected EventLoopGroup workerGroup;
@@ -37,11 +35,11 @@ public class IOFabricAPIClient {
     }
 
     /**
-     * Creates a new IOFabricAPIClient for REST calls.
+     * Creates a new IOFabricAPIConnector for REST calls.
      * @param handler - instance of {@link IOContainerRESTAPIHandler}
      * @param ssl
      */
-    public IOFabricAPIClient(IOContainerRESTAPIHandler handler, boolean ssl){
+    public IOFabricAPIConnector(IOContainerRESTAPIHandler handler, boolean ssl){
         bootstrap = init();
         bootstrap.handler(new ChannelInitializer() {
             @Override
@@ -53,11 +51,11 @@ public class IOFabricAPIClient {
     }
 
     /**
-     * Creates a new IOFabricAPIClient for WebSocket transmissions.
+     * Creates a new IOFabricAPIConnector for WebSocket transmissions.
      * @param handler - instance of {@link IOContainerWSAPIHandler}
      * @param ssl - indicates if connection should be established through secured protocol
      */
-    public IOFabricAPIClient(IOContainerWSAPIHandler handler, boolean ssl){
+    public IOFabricAPIConnector(IOContainerWSAPIHandler handler, boolean ssl){
         bootstrap = init();
         bootstrap.handler(new ChannelInitializer() {
             @Override
@@ -79,7 +77,7 @@ public class IOFabricAPIClient {
      *
      * @return a channel bound to the specified server
      */
-    public Channel connect(String server, int port)  {
+    public Channel initConnection(String server, int port)  {
         InetSocketAddress socketAddress = new InetSocketAddress(server, port);
         try {
             return bootstrap.connect(socketAddress).sync().channel();
@@ -105,7 +103,7 @@ public class IOFabricAPIClient {
     /**
      * Shuts down connection.
      */
-    public void disconnect(){
+    public void destroyConnection(){
         workerGroup.shutdownGracefully();
     }
 
