@@ -29,9 +29,9 @@ public interface IOFabricAPIListener {
     /**
      * Method is triggered when Container receives BAD_REQUEST response from ioFabric.
      *
-     * @param errors - arrays of error messages
+     * @param error - error messages
      */
-    void onError(String[] errors);
+    void onError(String error);
 
     /**
      * Method is triggered when Container receives message's receipt.
