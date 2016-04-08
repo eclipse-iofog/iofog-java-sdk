@@ -122,7 +122,7 @@ public class WebSocketManager {
         buffer1.writeByte(OPCODE_RECEIPT.intValue());
         //send Length
         int msgIdLength = pMessageId.length();
-        buffer1.writeBytes(ByteUtils.integerToBytes(msgIdLength));
+        buffer1.writeByte(msgIdLength);
         buffer1.writeByte(Long.BYTES);
 
         //Send opcode, id and timestamp

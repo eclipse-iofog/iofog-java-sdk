@@ -31,7 +31,7 @@ public interface IOFabricAPIListener {
      *
      * @param error - error messages
      */
-    void onError(String error);
+    void onBadRequest(String error);
 
     /**
      * Method is triggered when Container receives message's receipt.

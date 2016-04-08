@@ -43,7 +43,7 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
             JsonReader reader = Json.createReader(new StringReader(responseBody));
             JsonObject json = reader.readObject();
             if(response.getStatus() == HttpResponseStatus.BAD_REQUEST) {
-                listener.onError(json.toString());
+                listener.onBadRequest(json.toString());
             } else {
                 if (json.containsKey(IOFabricResponseUtils.CONFIG_FIELD_NAME)) {
                     JsonObject configJSON = json.getJsonObject(IOFabricResponseUtils.CONFIG_FIELD_NAME);

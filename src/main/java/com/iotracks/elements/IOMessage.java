@@ -91,20 +91,8 @@ public class IOMessage {
         if (json.containsKey(DIFFICULTY_TARGET_FIELD_NAME)){ setDifficultyTarget(json.getInt(DIFFICULTY_TARGET_FIELD_NAME));}
         if (json.containsKey(INFO_TYPE_FIELD_NAME)){ setInfoType(json.getString(INFO_TYPE_FIELD_NAME)); }
         if (json.containsKey(INFO_FORMAT_FIELD_NAME)){ setInfoFormat(json.getString(INFO_FORMAT_FIELD_NAME)); }
-        if (json.containsKey(CONTEXT_DATA_FIELD_NAME) && getInfoFormat().equalsIgnoreCase(INFO_FORMAT_BASE_64)) {
-            try {
-                setContextData(Base64.getDecoder().decode(json.getString(CONTEXT_DATA_FIELD_NAME)));
-            } catch (Exception e) {
-                //TODO log("IOMessage JSON Constructor", "context data is not base 64!");
-            }
-        }
-        if (json.containsKey(CONTENT_DATA_FIELD_NAME) && getInfoFormat().equalsIgnoreCase(INFO_FORMAT_BASE_64)){
-            try {
-                setContentData(Base64.getDecoder().decode(json.getString(CONTENT_DATA_FIELD_NAME)));
-            } catch (Exception e) {
-                //TODO log("IOMessage JSON Constructor", "content data is not base 64!");
-            }
-        }
+        if (json.containsKey(CONTEXT_DATA_FIELD_NAME) ){ setContextData(json.getString(CONTEXT_DATA_FIELD_NAME).getBytes()); }
+        if (json.containsKey(CONTENT_DATA_FIELD_NAME) ){ setContentData(json.getString(CONTENT_DATA_FIELD_NAME).getBytes()); }
     }
 
     public String getId() {
@@ -286,8 +274,8 @@ public class IOMessage {
                 .add(DIFFICULTY_TARGET_FIELD_NAME, getDifficultyTarget())
                 .add(INFO_TYPE_FIELD_NAME, getInfoType())
                 .add(INFO_FORMAT_FIELD_NAME, getInfoFormat())
-                .add(CONTEXT_DATA_FIELD_NAME, getContextData()!=null ? "" : Base64.getEncoder().encodeToString(getContextData()))
-                .add(CONTENT_DATA_FIELD_NAME, getContentData()!=null ? "" : Base64.getEncoder().encodeToString(getContentData()))
+                .add(CONTEXT_DATA_FIELD_NAME, getContextData()!=null ? "" : new String(getContextData()))
+                .add(CONTENT_DATA_FIELD_NAME, getContentData()!=null ? "" : new String(getContentData()))
                 .build();
     }
 
@@ -567,7 +555,7 @@ public class IOMessage {
 
         size = ByteUtils.bytesToInteger(ByteUtils.copyOfRange(header, 29, 33));
         if (size > 0) {
-            setContextData(ByteUtils.copyOfRange(data, pos, pos + size));
+            setContentData(ByteUtils.copyOfRange(data, pos, pos + size));
         }
     }
 
