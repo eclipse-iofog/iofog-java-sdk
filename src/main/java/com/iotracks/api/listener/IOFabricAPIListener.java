@@ -20,6 +20,15 @@ public interface IOFabricAPIListener {
     void onMessages(List<IOMessage> messages);
 
     /**
+     * Method is triggered when Container receives messages from Query request.
+     *
+     * @param timeframestart - time-frame start date of returned messages
+     * @param timeframeend - time-frame end date of returned messages
+     * @param messages - list of received messages
+     */
+    void onMessagesQuery(long timeframestart, long timeframeend, List<IOMessage> messages);
+
+    /**
      * Method is triggered when Container catches an error.
      *
      * @param cause - cause of exception
