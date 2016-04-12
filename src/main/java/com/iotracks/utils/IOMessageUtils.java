@@ -1,13 +1,11 @@
 package com.iotracks.utils;
 
-import com.iotracks.elements.IOMessage;
-
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Utils class for convenient encoding and decoding for IOMessage
+ * Utils class for convenient encoding and decoding for byte arrays
  *
  * @author ilaryionava
  */
@@ -16,33 +14,33 @@ public class IOMessageUtils {
     private static final Logger log = Logger.getLogger(IOMessageUtils.class.getName());
 
     /**
-     * Method to encode IOMessage to bytes in base64 format.
+     * Method to encode byte array to base64 format.
      *
-     * @param message - IOMessage to be encoded
+     * @param data - array of bytes to be encoded
      *
      * @return byte[]
      */
-    public byte[] encodeBase64(IOMessage message) {
+    public static byte[] encodeBase64(byte[] data) {
         try {
-            return Base64.getEncoder().encode(message.getBytes());
+            return Base64.getEncoder().encode(data);
         } catch (Exception e) {
-            log.log(Level.WARNING, "Error encoding IOMessage to base64 format.");
+            log.log(Level.WARNING, "Error encoding bytes to base64 format.");
             return null;
         }
     }
 
     /**
-     * Method to decode byte array in base64 format to IOMessage.
+     * Method to decode byte array from base64 format.
      *
-     * @param bytes - array of bytes to be decoded into IOMessage
+     * @param data - array of bytes to be decoded
      *
-     * @return IOMessage
+     * @return byte[]
      */
-    public IOMessage decodeBase64(byte[] bytes) {
+    public static byte[] decodeBase64(byte[] data) {
         try {
-            return new IOMessage(Base64.getDecoder().decode(bytes));
+            return Base64.getDecoder().decode(data);
         } catch (Exception e) {
-            log.log(Level.WARNING, "Error decoding bytes from base64 format to IOMessage.");
+            log.log(Level.WARNING, "Error decoding bytes from base64 format.");
             return null;
         }
     }

@@ -6,8 +6,8 @@ import com.iotracks.utils.IOFabricLocalAPIURL;
 import com.iotracks.elements.IOMessage;
 import com.iotracks.api.handler.*;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.internal.StringUtil;
@@ -38,7 +38,7 @@ public class IOFabricClient {
     private String server;
     private int port;
     private boolean ssl;
-    private String elementID;
+    private String elementID = "UNKNOWN_IO_TRACKS_CONTEINER_UIID";
     private IOContainerWSAPIHandler handler;
     private IOFabricLocalAPIURL wsType;
 
@@ -54,7 +54,10 @@ public class IOFabricClient {
         }
         this.port = port!=0 ? port : 54321;
         this.ssl = System.getProperty("ssl") != null;
-        this.elementID = System.getProperty("SELFNAME");
+        String selfname = System.getProperty("SELFNAME");
+        if(!StringUtil.isNullOrEmpty(selfname)) {
+            this.elementID = selfname;
+        }
     }
 
     /**
@@ -70,9 +73,7 @@ public class IOFabricClient {
         IOFabricAPIConnector localAPIConnector = new IOFabricAPIConnector(handler, ssl);
         Channel channel = localAPIConnector.initConnection(server, port);
         if(channel != null){
-            channel.write(getRequest(url, HttpMethod.POST));
-            channel.write(content);
-            channel.flush();
+            channel.writeAndFlush(getRequest(url, HttpMethod.POST, content.toString().getBytes()));
             try {
                 channel.closeFuture().sync();
             } catch (InterruptedException e) {
@@ -89,9 +90,12 @@ public class IOFabricClient {
      *
      * @return HttpRequest
      */
-    private HttpRequest getRequest(IOFabricLocalAPIURL url, HttpMethod httpMethod){
-        HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, httpMethod, url.getURL());
-        request.headers().set(CONTENT_TYPE, "application/json");
+    private FullHttpRequest getRequest(IOFabricLocalAPIURL url, HttpMethod httpMethod, byte[] content){
+        ByteBuf contentBuf = Unpooled.copiedBuffer(content);
+        FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, getURI(url, false).getRawPath(), contentBuf);
+        request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, contentBuf.readableBytes());
+        request.headers().set(HttpHeaders.Names.CONTENT_TYPE, "application/json");
+        request.headers().set(HttpHeaders.Names.HOST, server);
         return request;
     }
 
@@ -105,7 +109,7 @@ public class IOFabricClient {
      */
     private void openWebSocketConnection(IOFabricLocalAPIURL wsType, IOFabricLocalAPIURL url, IOFabricAPIListener listener){
         this.wsType = wsType;
-        handler = new IOContainerWSAPIHandler(listener, getURI(url), elementID, wsType);
+        handler = new IOContainerWSAPIHandler(listener, getURI(url, true), elementID, wsType);
         new Thread(new IOWebSocketConnector(handler, ssl, server, port)).start();
     }
 
@@ -203,17 +207,19 @@ public class IOFabricClient {
      * Method constructs a URL for request.
      *
      * @param url - url for request
+     * @param isWS - weather url os for WS request<
      *
      * @return URI
      */
-    private URI getURI(IOFabricLocalAPIURL url){
+    private URI getURI(IOFabricLocalAPIURL url, boolean isWS){
         StringBuilder urlBuilder = new StringBuilder();
+        String protocol = isWS ? "ws" : "http";
+        urlBuilder.append(protocol);
         if (ssl) {
-            urlBuilder.append("wss://");
-        } else {
-            urlBuilder.append("ws://");
+            urlBuilder.append("s");
         }
-        urlBuilder.append(server).append(":").append(port).append(url.getURL()).append(elementID);
+        urlBuilder.append("://").append(server).append(":").append(port).append(url.getURL());
+        if(isWS) { urlBuilder.append(elementID); }
         try {
             return new URI(urlBuilder.toString());
         } catch (URISyntaxException e){
@@ -221,5 +227,6 @@ public class IOFabricClient {
             return null;
         }
     }
+
 
 }

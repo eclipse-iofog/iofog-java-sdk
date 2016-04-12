@@ -1,11 +1,11 @@
 package com.iotracks.elements;
 
 import com.iotracks.utils.ByteUtils;
+import com.iotracks.utils.IOMessageUtils;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import java.io.ByteArrayOutputStream;
-import java.util.Base64;
 
 /**
  * IOMessage represent all message communication between ioFabric and Containers.
@@ -13,8 +13,6 @@ import java.util.Base64;
 public class IOMessage {
 
     private final short VERSION = 4;
-
-    private final String INFO_FORMAT_BASE_64 = "base64";
 
     public static final String ID_FIELD_NAME = "id";
     public static final String TAG_FIELD_NAME = "tag";
@@ -91,8 +89,12 @@ public class IOMessage {
         if (json.containsKey(DIFFICULTY_TARGET_FIELD_NAME)){ setDifficultyTarget(json.getInt(DIFFICULTY_TARGET_FIELD_NAME));}
         if (json.containsKey(INFO_TYPE_FIELD_NAME)){ setInfoType(json.getString(INFO_TYPE_FIELD_NAME)); }
         if (json.containsKey(INFO_FORMAT_FIELD_NAME)){ setInfoFormat(json.getString(INFO_FORMAT_FIELD_NAME)); }
-        if (json.containsKey(CONTEXT_DATA_FIELD_NAME) ){ setContextData(json.getString(CONTEXT_DATA_FIELD_NAME).getBytes()); }
-        if (json.containsKey(CONTENT_DATA_FIELD_NAME) ){ setContentData(json.getString(CONTENT_DATA_FIELD_NAME).getBytes()); }
+        if (json.containsKey(CONTEXT_DATA_FIELD_NAME) ){
+            setContextData(IOMessageUtils.decodeBase64(json.getString(CONTEXT_DATA_FIELD_NAME).getBytes()));
+        }
+        if (json.containsKey(CONTENT_DATA_FIELD_NAME) ){
+            setContentData(IOMessageUtils.decodeBase64(json.getString(CONTENT_DATA_FIELD_NAME).getBytes()));
+        }
     }
 
     public String getId() {
@@ -178,10 +180,6 @@ public class IOMessage {
     public short getVersion() {
         return version;
     }
-
-    /*public void setVersion(short version) {
-        this.version = version;
-    }*/
 
     public long getChainPosition() {
         return chainPosition;
@@ -274,8 +272,8 @@ public class IOMessage {
                 .add(DIFFICULTY_TARGET_FIELD_NAME, getDifficultyTarget())
                 .add(INFO_TYPE_FIELD_NAME, getInfoType())
                 .add(INFO_FORMAT_FIELD_NAME, getInfoFormat())
-                .add(CONTEXT_DATA_FIELD_NAME, getContextData()!=null ? "" : new String(getContextData()))
-                .add(CONTENT_DATA_FIELD_NAME, getContentData()!=null ? "" : new String(getContentData()))
+                .add(CONTEXT_DATA_FIELD_NAME, getContextData()!=null ? "" : new String(IOMessageUtils.encodeBase64(getContextData())))
+                .add(CONTENT_DATA_FIELD_NAME, getContentData()!=null ? "" : new String(IOMessageUtils.encodeBase64(getContentData())))
                 .build();
     }
 

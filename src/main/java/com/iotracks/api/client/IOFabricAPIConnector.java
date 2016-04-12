@@ -44,7 +44,7 @@ public class IOFabricAPIConnector {
         bootstrap.handler(new ChannelInitializer() {
             @Override
             protected void initChannel(Channel channel){
-                addSSLHandler(ssl, channel);
+                addDefaultHandlers(ssl, channel);
                 channel.pipeline().addLast(handler);
             }
         });
@@ -60,11 +60,8 @@ public class IOFabricAPIConnector {
         bootstrap.handler(new ChannelInitializer() {
             @Override
             protected void initChannel(Channel channel){
-                addSSLHandler(ssl, channel);
-                channel.pipeline().addLast(
-                        new HttpClientCodec(),
-                        new HttpObjectAggregator(8192),
-                        handler);
+                addDefaultHandlers(ssl, channel);
+                channel.pipeline().addLast(handler);
             }
         });
     }
@@ -87,7 +84,7 @@ public class IOFabricAPIConnector {
         }
     }
 
-    private void addSSLHandler(boolean ssl, Channel channel) {
+    private void addDefaultHandlers(boolean ssl, Channel channel) {
         if(ssl) {
            try {
                /* SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -98,6 +95,7 @@ public class IOFabricAPIConnector {
                log.warning("Error building SSL context.");
            }
         }
+        channel.pipeline().addLast(new HttpClientCodec(), new HttpObjectAggregator(8192));
     }
 
     /**
