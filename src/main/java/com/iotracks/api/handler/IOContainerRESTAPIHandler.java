@@ -62,8 +62,8 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                     });
                     if(json.containsKey(IOFabricResponseUtils.TIMEFRAME_START_FIELD_NAME) &&
                             json.containsKey(IOFabricResponseUtils.TIMEFRAME_END_FIELD_NAME)) {
-                        listener.onMessagesQuery(Long.valueOf(json.getString(IOFabricResponseUtils.TIMEFRAME_START_FIELD_NAME)),
-                                Long.valueOf(json.getString(IOFabricResponseUtils.TIMEFRAME_END_FIELD_NAME)),
+                        listener.onMessagesQuery(Long.valueOf(json.getJsonNumber(IOFabricResponseUtils.TIMEFRAME_START_FIELD_NAME).toString()),
+                                Long.valueOf(json.getJsonNumber(IOFabricResponseUtils.TIMEFRAME_END_FIELD_NAME).toString()),
                                 messagesList);
                     } else {
                         listener.onMessages(messagesList);
