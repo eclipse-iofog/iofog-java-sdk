@@ -2,6 +2,7 @@ package com.iotracks.api.listener;
 
 import com.iotracks.elements.IOMessage;
 
+import javax.json.JsonObject;
 import java.util.List;
 import java.util.Map;
 
@@ -53,9 +54,9 @@ public interface IOFabricAPIListener {
     /**
      * Method is triggered when Container receives new configuration.
      *
-     *  @param config - new configuration map
+     *  @param config - new configuration JSON
      */
-    void onNewConfig(Map<String, String> config);
+    void onNewConfig(JsonObject config);
 
     /**
      * Method is triggered when Container receives a signal about new configuration.

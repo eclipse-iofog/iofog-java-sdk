@@ -44,12 +44,11 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
             JsonObject json = reader.readObject();
             if(response.getStatus() == HttpResponseStatus.BAD_REQUEST) {
                 listener.onBadRequest(json.toString());
+                channelHandlerContext.close();
             } else {
                 if (json.containsKey(IOFabricResponseUtils.CONFIG_FIELD_NAME)) {
-                    JsonObject configJSON = json.getJsonObject(IOFabricResponseUtils.CONFIG_FIELD_NAME);
-                    Map<String, String> configMap = new HashMap<>();
-                    configJSON.keySet().forEach(key -> configMap.put(key, configJSON.getString(key)));
-                    listener.onNewConfig(configMap);
+                    listener.onNewConfig(json.getJsonObject(IOFabricResponseUtils.CONFIG_FIELD_NAME));
+                    channelHandlerContext.close();
                     return;
                 }
                 if (json.containsKey(IOFabricResponseUtils.MESSAGES_FIELD_NAME)) {
@@ -68,10 +67,12 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                     } else {
                         listener.onMessages(messagesList);
                     }
+                    channelHandlerContext.close();
                     return;
                 }
                 if(json.containsKey(IOFabricResponseUtils.ID_FIELD_NAME) && json.containsKey(IOFabricResponseUtils.TIMESTAMP_FIELD_NAME)) {
                     listener.onMessageReceipt(json.getString(IOFabricResponseUtils.ID_FIELD_NAME), Long.valueOf(json.getString(IOFabricResponseUtils.TIMESTAMP_FIELD_NAME)));
+                    channelHandlerContext.close();
                     return;
                 }
             }
