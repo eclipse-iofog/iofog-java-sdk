@@ -10,15 +10,10 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import javax.json.*;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -47,7 +42,9 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                 channelHandlerContext.close();
             } else {
                 if (json.containsKey(IOFabricResponseUtils.CONFIG_FIELD_NAME)) {
-                    listener.onNewConfig(json.getJsonObject(IOFabricResponseUtils.CONFIG_FIELD_NAME));
+                    JsonString configString = json.getJsonString(IOFabricResponseUtils.CONFIG_FIELD_NAME);
+                    JsonReader configReader = Json.createReader(new StringReader(configString.getString()));
+                    listener.onNewConfig(configReader.readObject());
                     channelHandlerContext.close();
                     return;
                 }
