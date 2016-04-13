@@ -45,17 +45,20 @@ public class IOFabricClient {
     /**
      * @param host - the server name or ip address (by default "router")
      * @param port - the listening port (bye default 54321)
+     * @param containerId - container's ID that will be used for all requests
      */
-    public IOFabricClient(String host, int port){
-        if(!StringUtil.isNullOrEmpty(host)) {
+    public IOFabricClient(String host, int port, String containerId) {
+        if (!StringUtil.isNullOrEmpty(host)) {
             this.server = host;
         } else {
             this.server = "iofabric";
         }
-        this.port = port!=0 ? port : 54321;
+        this.port = port != 0 ? port : 54321;
         this.ssl = System.getProperty("ssl") != null;
         String selfname = System.getProperty("SELFNAME");
-        if(!StringUtil.isNullOrEmpty(selfname)) {
+        if(!StringUtil.isNullOrEmpty(containerId)){
+            this.elementID = containerId;
+        } else if(!StringUtil.isNullOrEmpty(selfname)) {
             this.elementID = selfname;
         }
     }
