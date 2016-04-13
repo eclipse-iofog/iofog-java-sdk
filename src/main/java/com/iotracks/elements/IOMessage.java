@@ -35,38 +35,34 @@ public class IOMessage {
     public static final String CONTEXT_DATA_FIELD_NAME = "contextdata";
     public static final String CONTENT_DATA_FIELD_NAME = "contentdata";
 
-    private String id; // required
-    private String tag;
-    private String groupId;
+    private String id = ""; // required
+    private String tag = "";
+    private String groupId = "";
     private int sequenceNumber;
     private int sequenceTotal;
     private byte priority;
     private long timestamp; // required
-    private String publisher; // required
-    private String authId;
-    private String authGroup;
+    private String publisher = ""; // required
+    private String authId = "";
+    private String authGroup = "";
     private short version = VERSION; // required
     private long chainPosition;
-    private String hash;
-    private String previousHash;
-    private String nonce;
+    private String hash = "";
+    private String previousHash = "";
+    private String nonce = "";
     private int difficultyTarget;
-    private String infoType; // required
-    private String infoFormat; // required
+    private String infoType = ""; // required
+    private String infoFormat = ""; // required
     private byte[] contextData;
     private byte[] contentData; // required
 
-    public IOMessage(){
-        super();
-    }
+    public IOMessage(){ }
 
     public IOMessage(byte[] rawBytes){
-        super();
         convertBytesToMessage(null,rawBytes, 33);
     }
 
     public IOMessage(byte[] header, byte[] data) {
-        super();
         convertBytesToMessage(header, data, 0);
     }
 
@@ -272,8 +268,8 @@ public class IOMessage {
                 .add(DIFFICULTY_TARGET_FIELD_NAME, getDifficultyTarget())
                 .add(INFO_TYPE_FIELD_NAME, getInfoType())
                 .add(INFO_FORMAT_FIELD_NAME, getInfoFormat())
-                .add(CONTEXT_DATA_FIELD_NAME, getContextData()!=null ? "" : new String(IOMessageUtils.encodeBase64(getContextData())))
-                .add(CONTENT_DATA_FIELD_NAME, getContentData()!=null ? "" : new String(IOMessageUtils.encodeBase64(getContentData())))
+                .add(CONTEXT_DATA_FIELD_NAME, getContextData()==null ? "" : new String(IOMessageUtils.encodeBase64(getContextData())))
+                .add(CONTENT_DATA_FIELD_NAME, getContentData()==null ? "" : new String(IOMessageUtils.encodeBase64(getContentData())))
                 .build();
     }
 
