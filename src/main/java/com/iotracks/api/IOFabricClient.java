@@ -15,8 +15,11 @@ import io.netty.util.internal.StringUtil;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -52,6 +55,10 @@ public class IOFabricClient {
             this.server = host;
         } else {
             this.server = "iofabric";
+            if(!isHostReachable()){
+                log.warning("Host: " + server + " - is not reachable. Changing to default value: 127.0.0.1.");
+                this.server = "127.0.0.1";
+            }
         }
         this.port = port != 0 ? port : 54321;
         this.ssl = System.getProperty("ssl") != null;
@@ -228,6 +235,21 @@ public class IOFabricClient {
         } catch (URISyntaxException e){
             log.warning("Error constructing URL for request.");
             return null;
+        }
+    }
+
+    /**
+     * Method checks if the host of IOFabricClient is reachable.
+     *
+     * @return boolean
+     */
+    private boolean isHostReachable(){
+        try {
+            return InetAddress.getByName(server).isReachable(1000);
+        } catch (UnknownHostException e){
+            return false;
+        } catch (IOException e) {
+            return false;
         }
     }
 

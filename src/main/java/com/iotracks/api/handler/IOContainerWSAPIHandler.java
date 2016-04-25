@@ -68,7 +68,6 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
                     wsManager.addMessageContext(channelHandlerContext, containerId);
                     break;
             }
-            log.info("Handshake completed. " + wsType.toString() + " established.");
         }
         if (o instanceof WebSocketFrame ){
             wsManager.eatFrame(channelHandlerContext, (WebSocketFrame) o);

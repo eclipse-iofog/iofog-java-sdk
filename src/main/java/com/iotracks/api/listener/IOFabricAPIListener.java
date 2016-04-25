@@ -4,7 +4,6 @@ import com.iotracks.elements.IOMessage;
 
 import javax.json.JsonObject;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Listener's Interface for requests to ioFabric.
