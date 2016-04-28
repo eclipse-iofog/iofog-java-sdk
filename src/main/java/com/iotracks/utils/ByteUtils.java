@@ -2,6 +2,7 @@ package com.iotracks.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Utils class for convenient byte transformations.
@@ -92,6 +93,10 @@ public class ByteUtils {
         result.append("]");
 
         return result.toString();
+    }
+
+    public static byte[] floatToBytes(float x){
+        return ByteBuffer.allocate(4).putFloat(x).array();
     }
 
     public static int getLength(String s){
