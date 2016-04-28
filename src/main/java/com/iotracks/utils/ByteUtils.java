@@ -95,8 +95,8 @@ public class ByteUtils {
         return result.toString();
     }
 
-    public static byte[] floatToBytes(float x){
-        return ByteBuffer.allocate(4).putFloat(x).array();
+    public static byte[] decimalToBytes(double x){
+        return ByteBuffer.allocate(8).putDouble(x).array();
     }
 
     public static int getLength(String s){
