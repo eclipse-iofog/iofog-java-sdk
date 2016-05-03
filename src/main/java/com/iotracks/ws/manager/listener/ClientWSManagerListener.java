@@ -53,7 +53,8 @@ public class ClientWSManagerListener implements WebSocketManagerListener {
                 wsManager.sendAck(ctx);
             } else if (opcode == WebSocketManager.OPCODE_MSG.intValue() && wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
                 int totalMsgLength = ByteUtils.bytesToInteger(Arrays.copyOfRange(byteArray, 1, 5));
-                IOMessage message = new IOMessage(Arrays.copyOfRange(byteArray, 5, totalMsgLength));
+                int msgLength = totalMsgLength + 5;
+                IOMessage message = new IOMessage(Arrays.copyOfRange(byteArray, 5, msgLength));
                 wsListener.onMessages(Collections.singletonList(message));
                 wsManager.sendAck(ctx);
             } else if (opcode == WebSocketManager.OPCODE_RECEIPT.intValue() && wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
