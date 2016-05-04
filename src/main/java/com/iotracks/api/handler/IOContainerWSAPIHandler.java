@@ -51,7 +51,8 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        wsManager.closeSocket(ctx);
+        /*wsManager.closeSocket(ctx);*/
+        log.info("ioFabric is inactive");
     }
 
     @Override
