@@ -557,5 +557,30 @@ public class IOMessage {
     public String toString() {
         return "IOMessage{ " + getJson().toString() + " }";
     }
+    
+    public JsonObject toJson() {
+		return Json.createObjectBuilder()
+				.add("id", id == null ? "" : id)
+				.add("tag", tag == null ? "" : tag)
+				.add("groupid", groupId == null ? "" : groupId)
+				.add("sequencenumber", sequenceNumber)
+				.add("sequencetotal", sequenceTotal)
+				.add("priority", priority)
+				.add("timestamp", timestamp)
+				.add("publisher", publisher == null ? "" : publisher)
+				.add("authid", authId == null ? "" : authId)
+				.add("authgroup", authGroup == null ? "" : authGroup)
+				.add("version", version)
+				.add("chainposition", chainPosition)
+				.add("hash", hash == null ? "" : hash)
+				.add("previoushash", previousHash == null ? "" : previousHash)
+				.add("nonce", nonce == null ? "" : nonce)
+				.add("difficultytarget", difficultyTarget)
+				.add("infotype", infoType == null ? "" : infoType)
+				.add("infoformat", infoFormat == null ? "" : infoFormat)
+				.add("contextdata", contextData == null ? "" : new String(contextData))
+				.add("contentdata", contentData == null ? "" : new String(contentData))
+				.build();
+	}
 
 }
