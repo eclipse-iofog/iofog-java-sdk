@@ -42,8 +42,8 @@ public class IOFabricClient {
     private int port;
     private boolean ssl;
     private String elementID = "UNKNOWN_IO_TRACKS_CONTEINER_UIID";
-    private IOContainerWSAPIHandler handler;
-    private IOFabricLocalAPIURL wsType;
+    private IOContainerWSAPIHandler messageWSHandler = null;
+    private IOContainerWSAPIHandler controlWSHandler = null;
 
     /**
      * @param host - the server name or ip address (by default "router")
@@ -118,8 +118,14 @@ public class IOFabricClient {
      *
      */
     private void openWebSocketConnection(IOFabricLocalAPIURL wsType, IOFabricLocalAPIURL url, IOFabricAPIListener listener){
-        this.wsType = wsType;
+        IOContainerWSAPIHandler handler;
         handler = new IOContainerWSAPIHandler(listener, getURI(url, true), elementID, wsType);
+
+        if (wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API)
+            messageWSHandler = handler;
+        else
+            controlWSHandler = handler;
+
         new Thread(new IOWebSocketConnector(handler, ssl, server, port)).start();
     }
 
@@ -132,8 +138,8 @@ public class IOFabricClient {
     public void sendMessageToWebSocket(IOMessage message){
         if(message != null) {
             message.setPublisher(elementID);
-            if(handler != null && wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
-                handler.sendMessage(elementID, message);
+            if(messageWSHandler != null) {
+                messageWSHandler.sendMessage(elementID, message);
             } else {
                 log.warning("Message can be sent to ioFabric only if MessageWebSocket connection is established.");
             }
