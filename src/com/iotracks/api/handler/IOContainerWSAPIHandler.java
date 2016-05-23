@@ -30,7 +30,7 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
     private IOFabricAPIListener wsListener;
 
     public IOContainerWSAPIHandler(IOFabricAPIListener listener, URI uri, String containerId, IOFabricLocalAPIURL wsType){
-        this.handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders());
+        this.handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders(), Integer.MAX_VALUE);
         this.containerId = containerId;
         this.wsType = wsType;
         wsManager = new WebSocketManager(new ClientWSManagerListener(listener, wsType));

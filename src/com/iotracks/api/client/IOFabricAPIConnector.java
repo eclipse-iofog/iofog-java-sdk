@@ -95,7 +95,7 @@ public class IOFabricAPIConnector {
                log.warning("Error building SSL context.");
            }
         }
-        channel.pipeline().addLast(new HttpClientCodec(), new HttpObjectAggregator(8192));
+        channel.pipeline().addLast(new HttpClientCodec(), new HttpObjectAggregator(Integer.MAX_VALUE));
     }
 
     /**
@@ -104,5 +104,4 @@ public class IOFabricAPIConnector {
     public void destroyConnection(){
         workerGroup.shutdownGracefully();
     }
-
 }
