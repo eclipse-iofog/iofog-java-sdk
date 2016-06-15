@@ -17,13 +17,13 @@ This module lets you easily build an ioElement. It gives you all the functionali
 `IOFabricAPIListener` - listener's interface for requests to ioFabric.
 
 set up custom host, port and container's ID (in case of no params default values for host and port will be used: 'iofabric', 54321):
-```
+```java
    IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
 ```
 
 #### REST calls
 post new ioMessage to ioFabric via REST call (could trigger onError, onBadRequest and onMessageReceipt listener's methods):
-```
+```java
   IOMessage message = new IOMessage();
   MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
   IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
@@ -31,7 +31,7 @@ post new ioMessage to ioFabric via REST call (could trigger onError, onBadReques
 ```
 
 get list of ioMessages by time frame for accessible publishers from ioFabric via REST call (could trigger onError, onBadRequest and onMessagesQuery listener's methods):
-```
+```java
   IOMessage message = new IOMessage();
   MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
   IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
@@ -39,7 +39,7 @@ get list of ioMessages by time frame for accessible publishers from ioFabric via
 ```
 
 get list of next unread ioMessages via REST call (could trigger onError, onBadRequest and onMessages listener's methods):
-```
+```java
   IOMessage message = new IOMessage();
   MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
   IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
@@ -47,7 +47,7 @@ get list of next unread ioMessages via REST call (could trigger onError, onBadRe
 ```
 
 get container's config via REST call (could trigger onError, onBadRequest and onNewConfig listener's methods):
-```
+```java
   IOMessage message = new IOMessage();
   MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
   IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
@@ -57,21 +57,21 @@ get container's config via REST call (could trigger onError, onBadRequest and on
 #### WebSocket(WS) calls
 
 Open WS Control Channel to ioFabric (could trigger onError and onNewConfigSignal listener's methods):
-```
+```java
   IOMessage message = new IOMessage();
   MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
   IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
   ioFabricClient.openControlWebSocket(ioFabricListener);
 ```
 Open WS Message Channel to ioFabric (could trigger onError, onMessages and onMessageReceipt listener's methods):
-```
+```java
   IOMessage message = new IOMessage();
   MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
   IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
   ioFabricClient.openMessageWebSocket(ioFabricListener);
 ```
 Send ioMessage via WS Message Channel (pre-condition: WS Message Channel is open):
-```
+```java
   IOMessage message = new IOMessage();
   ioFabricClient.sendMessageToWebSocket(message);
 ```
