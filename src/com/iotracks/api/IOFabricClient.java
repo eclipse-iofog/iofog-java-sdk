@@ -16,12 +16,12 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
+import java.math.BigInteger;
+import java.net.*;
 import java.util.Date;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 /**
@@ -41,9 +41,18 @@ public class IOFabricClient {
     private String server;
     private int port;
     private boolean ssl;
-    private String elementID = "UNKNOWN_IO_TRACKS_CONTEINER_UIID";
-    private IOContainerWSAPIHandler messageWSHandler = null;
-    private IOContainerWSAPIHandler controlWSHandler = null;
+    private String elementID = "NOT_DEFINED";
+    private IOContainerWSAPIHandler wsMessageHandler = null;
+    private IOContainerWSAPIHandler wsControlHandler = null;
+    private static IOWebSocketConnector wsMessageConnector = null;
+    private static IOWebSocketConnector wsControlConnector = null;
+    private static Thread wsMessageThread = null;
+    private static Thread wsControlThread = null;
+    private final int wsConnectAttemptsLimit = 5;
+    public int wsReconnectMessageSocketAttempts = 0;
+    public int wsReconnectControlSocketAttempts = 0;
+    private final int wsConnectAttemptDelay = 1000;
+    private Timer timer;
 
     /**
      * @param host - the server name or ip address (by default "router")
@@ -68,6 +77,7 @@ public class IOFabricClient {
         } else if(!StringUtil.isNullOrEmpty(selfname)) {
             this.elementID = selfname;
         }
+        timer = new Timer();
     }
 
     /**
@@ -81,14 +91,17 @@ public class IOFabricClient {
     private void sendRequest(IOFabricLocalAPIURL url, JsonObject content, IOFabricAPIListener listener){
         IOContainerRESTAPIHandler handler = new IOContainerRESTAPIHandler(listener);
         IOFabricAPIConnector localAPIConnector = new IOFabricAPIConnector(handler, ssl);
-        Channel channel = localAPIConnector.initConnection(server, port);
-        if(channel != null){
-            channel.writeAndFlush(getRequest(url, HttpMethod.POST, content.toString().getBytes()));
-            try {
+        Channel channel;
+        try {
+            channel = localAPIConnector.initConnection(server, port);
+            if(channel != null) {
+                channel.writeAndFlush(getRequest(url, HttpMethod.POST, content.toString().getBytes()));
                 channel.closeFuture().sync();
-            } catch (InterruptedException e) {
-                log.warning("Error closing and synchronizing request channel.");
             }
+        } catch (ConnectException e) {
+            log.warning("Connection exception. Probably ioFabric is not reachable.");
+        } catch (InterruptedException e) {
+            log.warning("Error closing and synchronizing request channel.");
         }
     }
 
@@ -113,20 +126,35 @@ public class IOFabricClient {
      * Method opens a WebSocket connection to ioFabric in a separate thread.
      *
      * @param wsType - WebSocket type for connection
-     * @param url - url for request
      * @param listener - listener for communication with ioFabric
      *
      */
-    private void openWebSocketConnection(IOFabricLocalAPIURL wsType, IOFabricLocalAPIURL url, IOFabricAPIListener listener){
-        IOContainerWSAPIHandler handler;
-        handler = new IOContainerWSAPIHandler(listener, getURI(url, true), elementID, wsType);
-
-        if (wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API)
-            messageWSHandler = handler;
-        else
-            controlWSHandler = handler;
-
-        new Thread(new IOWebSocketConnector(handler, ssl, server, port)).start();
+    private void openWebSocketConnection(IOFabricLocalAPIURL wsType, IOFabricAPIListener listener){
+        IOContainerWSAPIHandler handler = new IOContainerWSAPIHandler(listener, getURI(wsType, true), elementID, wsType, this);
+        IOWebSocketConnector wsConnector = new IOWebSocketConnector(handler, ssl, server, port);
+        Thread thread = new Thread(new IOWebSocketConnector(handler, ssl, server, port));
+        thread.start();
+        if (wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
+            wsMessageHandler = handler;
+            wsMessageConnector = wsConnector;
+            wsMessageThread = thread;
+        } else if (wsType == IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API) {
+            wsControlHandler = handler;
+            wsControlConnector = wsConnector;
+            wsControlThread = thread;
+        } else {
+            log.warning("No WS type defined. No WS opened.");
+        }
+        synchronized (wsConnector.lock) {
+            try {
+                wsConnector.lock.wait();
+                if (wsConnector.isCaughtException()) {
+                    reconnect(wsType, listener);
+                }
+            } catch (InterruptedException e) {
+                log.warning("Error while opening WebSocket connection: " + e.getMessage());
+            }
+        }
     }
 
     /**
@@ -138,8 +166,8 @@ public class IOFabricClient {
     public void sendMessageToWebSocket(IOMessage message){
         if(message != null) {
             message.setPublisher(elementID);
-            if(messageWSHandler != null) {
-                messageWSHandler.sendMessage(elementID, message);
+            if(wsMessageHandler != null) {
+                wsMessageHandler.sendMessage(elementID, message);
             } else {
                 log.warning("Message can be sent to ioFabric only if MessageWebSocket connection is established.");
             }
@@ -206,7 +234,7 @@ public class IOFabricClient {
      *
      */
     public void openControlWebSocket(IOFabricAPIListener listener){
-        openWebSocketConnection(IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API, IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API, listener);
+        openWebSocketConnection(IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API, listener);
     }
 
     /**
@@ -216,7 +244,7 @@ public class IOFabricClient {
      *
      */
     public void openMessageWebSocket(IOFabricAPIListener listener){
-        openWebSocketConnection(IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API, IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API, listener);
+        openWebSocketConnection(IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API, listener);
     }
 
     /**
@@ -259,5 +287,51 @@ public class IOFabricClient {
         }
     }
 
+    public void reconnect(IOFabricLocalAPIURL wsType, IOFabricAPIListener listener) {
+        int delay = 0;
+        TimerTask wsTask = new WSTimerTask(wsType, listener);
+        BigInteger constPow = new BigInteger("2");
+        try{
+            if (wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
+                wsMessageConnector.terminate();
+                wsMessageThread.join();
+                if(wsReconnectMessageSocketAttempts < wsConnectAttemptsLimit) {
+                    delay = wsConnectAttemptDelay * constPow.pow(wsReconnectMessageSocketAttempts).intValue();
+                }
+                wsReconnectMessageSocketAttempts++;
+            } else if (wsType == IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API) {
+                wsControlConnector.terminate();
+                wsControlThread.join();
+                if(wsReconnectControlSocketAttempts < wsConnectAttemptsLimit) {
+                    delay = wsConnectAttemptDelay * constPow.pow(wsReconnectControlSocketAttempts).intValue();
+                }
+                wsReconnectControlSocketAttempts++;
+            } else {
+                log.warning("No WS type defined. No WS opened.");
+            }
+        } catch (InterruptedException e) {
+            log.warning("Exception when closing threads for WS connection.");
+        }
+        if(delay == 0) {
+            delay = wsConnectAttemptDelay * constPow.pow(wsConnectAttemptsLimit - 1).intValue();
+        }
+        timer.schedule(wsTask, delay);
+    }
 
+
+    class WSTimerTask extends TimerTask {
+
+        private IOFabricLocalAPIURL wsType;
+        private IOFabricAPIListener listener;
+
+        public WSTimerTask(IOFabricLocalAPIURL wsType, IOFabricAPIListener listener){
+            this.wsType = wsType;
+            this.listener = listener;
+        }
+
+        @Override
+        public void run() {
+            openWebSocketConnection(wsType, listener);
+        }
+    }
 }

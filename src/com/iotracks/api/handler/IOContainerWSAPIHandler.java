@@ -1,5 +1,6 @@
 package com.iotracks.api.handler;
 
+import com.iotracks.api.IOFabricClient;
 import com.iotracks.api.listener.IOFabricAPIListener;
 import com.iotracks.utils.IOFabricLocalAPIURL;
 import com.iotracks.ws.manager.WebSocketManager;
@@ -28,13 +29,15 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
     private String containerId;
     private IOFabricLocalAPIURL wsType;
     private IOFabricAPIListener wsListener;
+    private IOFabricClient ioFabricClient;
 
-    public IOContainerWSAPIHandler(IOFabricAPIListener listener, URI uri, String containerId, IOFabricLocalAPIURL wsType){
+    public IOContainerWSAPIHandler(IOFabricAPIListener listener, URI uri, String containerId, IOFabricLocalAPIURL wsType, IOFabricClient ioFabricClient){
         this.handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders(), Integer.MAX_VALUE);
         this.containerId = containerId;
         this.wsType = wsType;
         wsManager = new WebSocketManager(new ClientWSManagerListener(listener, wsType));
         wsListener = listener;
+        this.ioFabricClient = ioFabricClient;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -47,12 +50,13 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) { handshaker.handshake(ctx.channel()); }
+    public void channelActive(ChannelHandlerContext ctx) {
+        handshaker.handshake(ctx.channel());
+    }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        /*wsManager.closeSocket(ctx);*/
-        log.info("ioFabric is inactive");
+        ioFabricClient.reconnect(wsType, wsListener);
     }
 
     @Override
@@ -63,9 +67,11 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
             handshakeFuture.setSuccess();
             switch (wsType){
                 case GET_CONTROL_WEB_SOCKET_LOCAL_API:
+                    ioFabricClient.wsReconnectControlSocketAttempts = 0;
                     wsManager.addControlContext(channelHandlerContext, containerId);
                     break;
                 case GET_MSG_WEB_SOCKET_LOCAL_API:
+                    ioFabricClient.wsReconnectMessageSocketAttempts = 0;
                     wsManager.addMessageContext(channelHandlerContext, containerId);
                     break;
             }

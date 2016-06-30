@@ -29,7 +29,7 @@ public class WebSocketManager {
     public static final Byte OPCODE_ACK = 0xB;
     public static final Byte OPCODE_CONTROL_SIGNAL = 0xC;
     public static final Byte OPCODE_MSG = 0xD;
-    public static final Byte OPCODE_RECEIPT = 0xE; //TODO
+    public static final Byte OPCODE_RECEIPT = 0xE;
 
     private Map<String, ChannelHandlerContext> mControlWebsocketMap;
     private Map<String, ChannelHandlerContext> mMessageWebsocketMap;
@@ -39,8 +39,6 @@ public class WebSocketManager {
 
     private WebSocketManagerListener wsListener;
 
-    private ScheduledExecutorService mScheduler;
-
     public WebSocketManager(WebSocketManagerListener wsListener){
         mControlWebsocketMap = new ConcurrentHashMap<>();
         mMessageWebsocketMap = new ConcurrentHashMap<>();
@@ -48,11 +46,6 @@ public class WebSocketManager {
         mControlSignalSendContextMap = new ConcurrentHashMap<>();
         mPingSendMap = Collections.synchronizedSet(new HashSet<>());
 
-        mScheduler = Executors.newScheduledThreadPool(4);
-        mScheduler.scheduleWithFixedDelay(new MessageWatcher(mMessageSendContextMap, this), 0, 5, TimeUnit.SECONDS);
-        mScheduler.scheduleWithFixedDelay(new ControlWatcher(mControlSignalSendContextMap, this), 0, 5, TimeUnit.SECONDS);
-        mScheduler.scheduleWithFixedDelay(new PingWatcher(mPingSendMap, mControlWebsocketMap, this), 0, 10, TimeUnit.SECONDS);
-        mScheduler.scheduleWithFixedDelay(new PingWatcher(mPingSendMap, mMessageWebsocketMap, this), 0, 10, TimeUnit.SECONDS);
         this.wsListener = wsListener;
     }
 
@@ -66,7 +59,6 @@ public class WebSocketManager {
     }
 
     public void sendMessage(ChannelHandlerContext pCtx, byte[] pData){
-        //byte[] header = new byte[]{OPCODE_MSG, (byte)pData.length};
         byte[] header = new byte[5];
         byte[] bLenArr = ByteUtils.integerToBytes(pData.length);
         header[0] = OPCODE_MSG;
@@ -105,7 +97,6 @@ public class WebSocketManager {
     }
 
     public void sendControl(ChannelHandlerContext pCtx){
-        //sendBinaryFrame(pCtx, new byte[]{OPCODE_CONTROL_SIGNAL});
         ByteBuf buffer1 = pCtx.alloc().buffer();
         buffer1.writeByte(OPCODE_CONTROL_SIGNAL);
         buffer1.writeByte(Byte.SIZE);
@@ -341,85 +332,6 @@ public class WebSocketManager {
 
         public void trying(){
             mSendCnt--;
-        }
-    }
-
-    private class MessageWatcher implements Runnable{
-
-        private Map<ChannelHandlerContext, AckMarker> mMessageSendContextMap;
-        private WebSocketManager mSocketManager;
-
-        public MessageWatcher(Map<ChannelHandlerContext, AckMarker> pMessageSendContextMap, WebSocketManager pSocketManager){
-            mMessageSendContextMap = pMessageSendContextMap;
-            mSocketManager = pSocketManager;
-        }
-        @Override
-        public void run() {
-            for(ChannelHandlerContext ctx: mMessageSendContextMap.keySet()){
-                AckMarker marker = mMessageSendContextMap.get(ctx);
-                if(marker.getSendCnt() > 0){
-                    marker.trying();
-                    mSocketManager.sendMessage(ctx, marker.getData());
-                }
-                else{
-                    mMessageSendContextMap.remove(ctx);
-                    mSocketManager.closeSocket(ctx);
-                }
-            }
-        }
-    }
-
-    private class ControlWatcher implements Runnable{
-
-        private Map<ChannelHandlerContext, Integer> mControlSignalSendContextMap;
-        private WebSocketManager mSocketManager;
-
-        public ControlWatcher(Map<ChannelHandlerContext, Integer> pControlSignalSendContextMap,  WebSocketManager pSocketManager){
-            mControlSignalSendContextMap = pControlSignalSendContextMap;
-            mSocketManager = pSocketManager;
-        }
-
-        @Override
-        public void run() {
-            for(ChannelHandlerContext ctx : mControlSignalSendContextMap.keySet()){
-                int cnt = mControlSignalSendContextMap.get(ctx);
-                if(cnt > 0){
-                    cnt--;
-                    mControlSignalSendContextMap.put(ctx, cnt);
-                    mSocketManager.sendControl(ctx);
-                }
-                else{
-                    mControlSignalSendContextMap.remove(ctx);
-                    mSocketManager.closeSocket(ctx);
-                }
-            }
-        }
-    }
-
-    private class PingWatcher implements Runnable{
-
-        private WebSocketManager mSocketManager;
-        private Set<ChannelHandlerContext> mPingSendMap;
-        private Map<String, ChannelHandlerContext> mWebsocketMap;
-
-        public PingWatcher(Set<ChannelHandlerContext> pPingSendMap, Map<String, ChannelHandlerContext> pWebsocketMap, WebSocketManager pSocketManager){
-            mSocketManager = pSocketManager;
-            mPingSendMap = pPingSendMap;
-            mWebsocketMap = pWebsocketMap;
-        }
-
-        @Override
-        public void run() {
-            for(ChannelHandlerContext ctx : mPingSendMap){
-                mSocketManager.closeSocket(ctx);
-                mPingSendMap.remove(ctx);
-            }
-
-            for(String id : mWebsocketMap.keySet()){
-                ChannelHandlerContext ctx = mWebsocketMap.get(id);
-                mPingSendMap.add(ctx);
-                mSocketManager.sendPing(ctx);
-            }
         }
     }
 }

@@ -10,7 +10,11 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+
 import javax.net.ssl.SSLException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
@@ -25,6 +29,9 @@ public class IOFabricAPIConnector {
 
     protected Bootstrap bootstrap;
     protected EventLoopGroup workerGroup;
+    private volatile Boolean connectionSuccess;
+    private volatile Boolean operationComplete = false;
+    private final Object lock = new Object();
 
     private Bootstrap init(){
         workerGroup = new NioEventLoopGroup();
@@ -74,10 +81,35 @@ public class IOFabricAPIConnector {
      *
      * @return a channel bound to the specified server
      */
-    public Channel initConnection(String server, int port)  {
+    public Channel initConnection(String server, int port) throws ConnectException {
         InetSocketAddress socketAddress = new InetSocketAddress(server, port);
         try {
-            return bootstrap.connect(socketAddress).sync().channel();
+            final ChannelFuture channelFuture = bootstrap.connect(socketAddress);
+            channelFuture.addListener(new GenericFutureListener<Future<Object>>() {
+                public void operationComplete(Future<Object> future){
+                    synchronized (lock) {
+                        if (!channelFuture.isSuccess()) {
+                            if (future.cause() instanceof ConnectException) {
+                                connectionSuccess = false;
+                            }
+                        } else {
+                            connectionSuccess = true;
+                        }
+                        operationComplete = true;
+                        lock.notify();
+                    }
+                }
+            });
+            synchronized (lock) {
+                while(!operationComplete) {
+                    lock.wait();
+                }
+                if (connectionSuccess) {
+                    return channelFuture.sync().channel();
+                } else {
+                    throw new ConnectException("Error connecting to ioFabric via WebSocket.");
+                }
+            }
         } catch (InterruptedException e) {
             log.warning("Error connection to specified address : " + socketAddress.toString());
             return null;
