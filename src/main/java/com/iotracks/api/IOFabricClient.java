@@ -132,7 +132,7 @@ public class IOFabricClient {
     private void openWebSocketConnection(IOFabricLocalAPIURL wsType, IOFabricAPIListener listener){
         IOContainerWSAPIHandler handler = new IOContainerWSAPIHandler(listener, getURI(wsType, true), elementID, wsType, this);
         IOWebSocketConnector wsConnector = new IOWebSocketConnector(handler, ssl, server, port);
-        Thread thread = new Thread(new IOWebSocketConnector(handler, ssl, server, port));
+        Thread thread = new Thread(wsConnector);
         thread.start();
         if (wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
             wsMessageHandler = handler;
