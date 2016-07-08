@@ -89,9 +89,7 @@ public class IOFabricAPIConnector {
                 public void operationComplete(Future<Object> future){
                     synchronized (lock) {
                         if (!channelFuture.isSuccess()) {
-                            if (future.cause() instanceof ConnectException) {
-                                connectionSuccess = false;
-                            }
+                            connectionSuccess = false;
                         } else {
                             connectionSuccess = true;
                         }

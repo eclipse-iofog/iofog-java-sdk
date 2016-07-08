@@ -38,6 +38,7 @@ public class IOWebSocketConnector implements Runnable {
                 handler.handshakeFuture().sync();
             } catch (InterruptedException e) {
                 log.warning("Error synchronizing channel for WebSocket connection.");
+                caughtException = true;
             } catch (ConnectException e) {
                 log.warning("Socket Connection Error.");
                 caughtException = true;
