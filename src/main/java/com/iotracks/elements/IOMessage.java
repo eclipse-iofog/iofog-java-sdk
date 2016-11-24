@@ -8,7 +8,7 @@ import javax.json.JsonObject;
 import java.io.ByteArrayOutputStream;
 
 /**
- * IOMessage represent all message communication between ioFabric and Containers.
+ * IOMessage represent all message communication between ioFog and Containers.
  */
 public class IOMessage {
 

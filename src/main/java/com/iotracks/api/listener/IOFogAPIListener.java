@@ -6,11 +6,11 @@ import javax.json.JsonObject;
 import java.util.List;
 
 /**
- * Listener's Interface for requests to ioFabric.
+ * Listener's Interface for requests to ioFog.
  *
  * @author ilaryionava
  */
-public interface IOFabricAPIListener {
+public interface IOFogAPIListener {
 
     /**
      * Method is triggered when Container receives messages.
@@ -36,7 +36,7 @@ public interface IOFabricAPIListener {
     void onError(Throwable cause);
 
     /**
-     * Method is triggered when Container receives BAD_REQUEST response from ioFabric.
+     * Method is triggered when Container receives BAD_REQUEST response from ioFog.
      *
      * @param error - error messages
      */
@@ -46,7 +46,7 @@ public interface IOFabricAPIListener {
      * Method is triggered when Container receives message's receipt.
      *
      * @param messageId - generated id of sent message
-     * @param timestamp - timestamp generated when message was received by ioFabric
+     * @param timestamp - timestamp generated when message was received by ioFog
      */
     void onMessageReceipt(String messageId, long timestamp);
 

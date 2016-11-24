@@ -19,13 +19,13 @@ import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
 /**
- * Client to establish connection to ioFabric API.
+ * Client to establish connection to ioFog API.
  *
  * @author ilaryionava
  */
-public class IOFabricAPIConnector {
+public class IOFogAPIConnector {
 
-    private static final Logger log = Logger.getLogger(IOFabricAPIConnector.class.getName());
+    private static final Logger log = Logger.getLogger(IOFogAPIConnector.class.getName());
 
     protected Bootstrap bootstrap;
     protected EventLoopGroup workerGroup;
@@ -42,11 +42,11 @@ public class IOFabricAPIConnector {
     }
 
     /**
-     * Creates a new IOFabricAPIConnector for REST calls.
+     * Creates a new IOFogAPIConnector for REST calls.
      * @param handler - instance of {@link IOContainerRESTAPIHandler}
      * @param ssl
      */
-    public IOFabricAPIConnector(IOContainerRESTAPIHandler handler, boolean ssl){
+    public IOFogAPIConnector(IOContainerRESTAPIHandler handler, boolean ssl){
         bootstrap = init();
         bootstrap.handler(new ChannelInitializer() {
             @Override
@@ -58,11 +58,11 @@ public class IOFabricAPIConnector {
     }
 
     /**
-     * Creates a new IOFabricAPIConnector for WebSocket transmissions.
+     * Creates a new IOFogAPIConnector for WebSocket transmissions.
      * @param handler - instance of {@link IOContainerWSAPIHandler}
      * @param ssl - indicates if connection should be established through secured protocol
      */
-    public IOFabricAPIConnector(IOContainerWSAPIHandler handler, boolean ssl){
+    public IOFogAPIConnector(IOContainerWSAPIHandler handler, boolean ssl){
         bootstrap = init();
         bootstrap.handler(new ChannelInitializer() {
             @Override
@@ -105,7 +105,7 @@ public class IOFabricAPIConnector {
                 if (connectionSuccess) {
                     return channelFuture.sync().channel();
                 } else {
-                    throw new ConnectException("Error connecting to ioFabric via WebSocket.");
+                    throw new ConnectException("Error connecting to ioFog via WebSocket.");
                 }
             }
         } catch (InterruptedException e) {

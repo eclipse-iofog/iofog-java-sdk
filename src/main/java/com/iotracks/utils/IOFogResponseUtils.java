@@ -1,11 +1,11 @@
 package com.iotracks.utils;
 
 /**
- * Util class for all response field names that Container can get from ioFabric.
+ * Util class for all response field names that Container can get from ioFog.
  *
  * @author ilaryionava
  */
-public class IOFabricResponseUtils {
+public class IOFogResponseUtils {
 
     public static final String ID_FIELD_NAME = "id";
     public static final String STATUS_FIELD_NAME = "status";

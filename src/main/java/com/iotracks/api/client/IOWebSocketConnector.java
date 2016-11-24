@@ -6,7 +6,7 @@ import java.net.ConnectException;
 import java.util.logging.Logger;
 
 /**
- * Creates a WebSocket connection to ioFabric in a separate thread.
+ * Creates a WebSocket connection to ioFog in a separate thread.
  *
  * @author ilaryionava
  */
@@ -14,7 +14,7 @@ public class IOWebSocketConnector implements Runnable {
 
     private static final Logger log = Logger.getLogger(IOWebSocketConnector.class.getName());
 
-    private IOFabricAPIConnector ioFabricAPIConnector;
+    private IOFogAPIConnector ioFogAPIConnector;
     private IOContainerWSAPIHandler handler;
     private boolean ssl;
     private String host;
@@ -32,9 +32,9 @@ public class IOWebSocketConnector implements Runnable {
     @Override
     public void run() {
         synchronized (lock) {
-            ioFabricAPIConnector = new IOFabricAPIConnector(handler, ssl);
+            ioFogAPIConnector = new IOFogAPIConnector(handler, ssl);
             try {
-                ioFabricAPIConnector.initConnection(host, port);
+                ioFogAPIConnector.initConnection(host, port);
                 handler.handshakeFuture().sync();
             } catch (InterruptedException e) {
                 log.warning("Error synchronizing channel for WebSocket connection.");
@@ -50,8 +50,8 @@ public class IOWebSocketConnector implements Runnable {
 
     public void terminate(){
         caughtException = false;
-        if(ioFabricAPIConnector != null){
-            ioFabricAPIConnector.destroyConnection();
+        if(ioFogAPIConnector != null){
+            ioFogAPIConnector.destroyConnection();
         }
     }
 

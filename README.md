@@ -1,79 +1,79 @@
 # container-sdk-java
 
-This module lets you easily build an ioElement. It gives you all the functionality to interact with ioFabric via Local API. Additionally some useful methods to work with ioMessage.
+This module lets you easily build an ioElement. It gives you all the functionality to interact with ioFog via Local API. Additionally some useful methods to work with ioMessage.
 
- - send new message to ioFabric (pushNewMessage)
- - fetch next unread messages from ioFabric (fetchNextMessage)
+ - send new message to ioFog (pushNewMessage)
+ - fetch next unread messages from ioFog (fetchNextMessage)
  - fetch messages for time period and list of accessible publishers (fetchMessagesByQuery)
  - get config options (fetchContainerConfig)
- - connect to ioFabric Control Channel via WebSocket (openControlWebSocket)
- - connect to ioFabric Message Channel via WebSocket (openMessageWebSocket) and publish new message via this channel (sendMessageToWebSocket)
+ - connect to ioFog Control Channel via WebSocket (openControlWebSocket)
+ - connect to ioFog Message Channel via WebSocket (openMessageWebSocket) and publish new message via this channel (sendMessageToWebSocket)
 
 ## Code snippets: 
 
-`IOFabricClient` implements all methods to communicate with ioFabric (via local API).
-`IOMessage` represent all message communication between ioFabric and Containers.
+`ioFogClient` implements all methods to communicate with ioFog (via local API).
+`IOMessage` represent all message communication between ioFog and Containers.
 `IOMessageUtils` class is convenient to encode and decode byte arrays.
-`IOFabricAPIListener` - listener's interface for requests to ioFabric.
+`ioFogAPIListener` - listener's interface for requests to ioFog.
 
-set up custom host, port and container's ID (in case of no params default values for host and port will be used: 'iofabric', 54321):
+set up custom host, port and container's ID (in case of no params default values for host and port will be used: 'ioFog', 54321):
 ```java
-   IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
+   ioFogClient ioFogClient = new ioFogClient("iofog", 54321, "TEST_CONTAINER_ID");
 ```
 
 #### REST calls
-post new ioMessage to ioFabric via REST call (could trigger onError, onBadRequest and onMessageReceipt listener's methods):
+post new ioMessage to ioFog via REST call (could trigger onError, onBadRequest and onMessageReceipt listener's methods):
 ```java
   IOMessage message = new IOMessage();
-  MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
-  IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
-  ioFabricClient.pushNewMessage(message, ioFabricListener);
+  MyIOFAPIListener ioFogListener = new MyIOFAPIListener(); // implementation of listener's interface
+  ioFogClient ioFogClient = new ioFogClient("iofog", 54321, "TEST_CONTAINER_ID");
+  ioFogClient.pushNewMessage(message, ioFogListener);
 ```
 
-get list of ioMessages by time frame for accessible publishers from ioFabric via REST call (could trigger onError, onBadRequest and onMessagesQuery listener's methods):
+get list of ioMessages by time frame for accessible publishers from ioFog via REST call (could trigger onError, onBadRequest and onMessagesQuery listener's methods):
 ```java
   IOMessage message = new IOMessage();
-  MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
-  IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
-  ioFabricClient.fetchMessagesByQuery(new Date(), new Date(), Collections.singleton("publisher_ID"), ioFabricListener);
+  MyIOFAPIListener ioFogListener = new MyIOFAPIListener(); // implementation of listener's interface
+  ioFogClient ioFogClient = new ioFogClient("iofog", 54321, "TEST_CONTAINER_ID");
+  ioFogClient.fetchMessagesByQuery(new Date(), new Date(), Collections.singleton("publisher_ID"), ioFogListener);
 ```
 
 get list of next unread ioMessages via REST call (could trigger onError, onBadRequest and onMessages listener's methods):
 ```java
   IOMessage message = new IOMessage();
-  MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
-  IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
-  ioFabricClient.fetchNextMessage(ioFabricListener);
+  MyIOFAPIListener ioFogListener = new MyIOFAPIListener(); // implementation of listener's interface
+  ioFogClient ioFogClient = new ioFogClient("iofog", 54321, "TEST_CONTAINER_ID");
+  ioFogClient.fetchNextMessage(ioFogListener);
 ```
 
 get container's config via REST call (could trigger onError, onBadRequest and onNewConfig listener's methods):
 ```java
   IOMessage message = new IOMessage();
-  MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
-  IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
-  ioFabricClient.fetchContainerConfig(ioFabricListener);
+  MyIOFAPIListener ioFogListener = new MyIOFAPIListener(); // implementation of listener's interface
+  ioFogClient ioFogClient = new ioFogClient("iofog", 54321, "TEST_CONTAINER_ID");
+  ioFogClient.fetchContainerConfig(ioFogListener);
 ```
 
 #### WebSocket(WS) calls
 
-Open WS Control Channel to ioFabric (could trigger onError and onNewConfigSignal listener's methods):
+Open WS Control Channel to ioFog (could trigger onError and onNewConfigSignal listener's methods):
 ```java
   IOMessage message = new IOMessage();
-  MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
-  IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
-  ioFabricClient.openControlWebSocket(ioFabricListener);
+  MyIOFAPIListener ioFogListener = new MyIOFAPIListener(); // implementation of listener's interface
+  ioFogClient ioFogClient = new ioFogClient("iofog", 54321, "TEST_CONTAINER_ID");
+  ioFogClient.openControlWebSocket(ioFogListener);
 ```
-Open WS Message Channel to ioFabric (could trigger onError, onMessages and onMessageReceipt listener's methods):
+Open WS Message Channel to ioFog (could trigger onError, onMessages and onMessageReceipt listener's methods):
 ```java
   IOMessage message = new IOMessage();
-  MyIOFAPIListener ioFabricListener = new MyIOFAPIListener(); // implementation of listener's interface
-  IOFabricClient ioFabricClient = new IOFabricClient("127.0.0.1", 10500, "TEST_CONTAINER_ID");
-  ioFabricClient.openMessageWebSocket(ioFabricListener);
+  MyIOFAPIListener ioFogListener = new MyIOFAPIListener(); // implementation of listener's interface
+  ioFogClient ioFogClient = new ioFogClient("iofog", 54321, "TEST_CONTAINER_ID");
+  ioFogClient.openMessageWebSocket(ioFogListener);
 ```
 Send ioMessage via WS Message Channel (pre-condition: WS Message Channel is open):
 ```java
   IOMessage message = new IOMessage();
-  ioFabricClient.sendMessageToWebSocket(message);
+  ioFogClient.sendMessageToWebSocket(message);
 ```
 
 

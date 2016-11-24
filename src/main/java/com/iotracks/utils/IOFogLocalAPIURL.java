@@ -1,9 +1,9 @@
 package com.iotracks.utils;
 
 /**
- * Enum for all ioFabric's Local API requests URLs
+ * Enum for all ioFog's Local API requests URLs
  */
-public enum IOFabricLocalAPIURL {
+public enum IOFogLocalAPIURL {
 
     GET_CONFIG_REST_LOCAL_API ("/v2/config/get") ,
     GET_NEXT_MSG_REST_LOCAL_API ("/v2/messages/next"),
@@ -14,7 +14,7 @@ public enum IOFabricLocalAPIURL {
 
     private String url;
 
-    IOFabricLocalAPIURL(String url){
+    IOFogLocalAPIURL(String url){
        this.url = url;
     }
 

@@ -1,8 +1,8 @@
 package com.iotracks.api.handler;
 
-import com.iotracks.api.IOFabricClient;
-import com.iotracks.api.listener.IOFabricAPIListener;
-import com.iotracks.utils.IOFabricLocalAPIURL;
+import com.iotracks.api.IOFogClient;
+import com.iotracks.api.listener.IOFogAPIListener;
+import com.iotracks.utils.IOFogLocalAPIURL;
 import com.iotracks.ws.manager.WebSocketManager;
 import com.iotracks.elements.IOMessage;
 import com.iotracks.ws.manager.listener.ClientWSManagerListener;
@@ -15,7 +15,7 @@ import java.net.URI;
 import java.util.logging.Logger;
 
 /**
- * Containers's Handler for WebSocket transmissions with ioFabric.
+ * Containers's Handler for WebSocket transmissions with ioFog.
  *
  * @author ilaryionava
  */
@@ -27,17 +27,17 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
     private ChannelPromise handshakeFuture;
     private WebSocketManager wsManager;
     private String containerId;
-    private IOFabricLocalAPIURL wsType;
-    private IOFabricAPIListener wsListener;
-    private IOFabricClient ioFabricClient;
+    private IOFogLocalAPIURL wsType;
+    private IOFogAPIListener wsListener;
+    private IOFogClient ioFogClient;
 
-    public IOContainerWSAPIHandler(IOFabricAPIListener listener, URI uri, String containerId, IOFabricLocalAPIURL wsType, IOFabricClient ioFabricClient){
+    public IOContainerWSAPIHandler(IOFogAPIListener listener, URI uri, String containerId, IOFogLocalAPIURL wsType, IOFogClient ioFogClient){
         this.handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders(), Integer.MAX_VALUE);
         this.containerId = containerId;
         this.wsType = wsType;
         wsManager = new WebSocketManager(new ClientWSManagerListener(listener, wsType));
         wsListener = listener;
-        this.ioFabricClient = ioFabricClient;
+        this.ioFogClient = ioFogClient;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -56,7 +56,7 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        ioFabricClient.reconnect(wsType, wsListener);
+        ioFogClient.reconnect(wsType, wsListener);
     }
 
     @Override
@@ -67,11 +67,11 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
             handshakeFuture.setSuccess();
             switch (wsType){
                 case GET_CONTROL_WEB_SOCKET_LOCAL_API:
-                    ioFabricClient.wsReconnectControlSocketAttempts = 0;
+                    ioFogClient.wsReconnectControlSocketAttempts = 0;
                     wsManager.addControlContext(channelHandlerContext, containerId);
                     break;
                 case GET_MSG_WEB_SOCKET_LOCAL_API:
-                    ioFabricClient.wsReconnectMessageSocketAttempts = 0;
+                    ioFogClient.wsReconnectMessageSocketAttempts = 0;
                     wsManager.addMessageContext(channelHandlerContext, containerId);
                     break;
             }

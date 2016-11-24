@@ -17,7 +17,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
 
 
 /**
- * Manager for all WebSocket communications between Container and ioFabric.
+ * Manager for all WebSocket communications between Container and ioFog.
  */
 public class WebSocketManager {
 

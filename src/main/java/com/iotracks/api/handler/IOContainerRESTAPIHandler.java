@@ -1,8 +1,8 @@
 package com.iotracks.api.handler;
 
-import com.iotracks.api.listener.IOFabricAPIListener;
+import com.iotracks.api.listener.IOFogAPIListener;
 import com.iotracks.elements.IOMessage;
-import com.iotracks.utils.IOFabricResponseUtils;
+import com.iotracks.utils.IOFogResponseUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -17,15 +17,15 @@ import java.util.List;
 
 
 /**
- * Containers's Handler for WebSocket transmissions with ioFabric.
+ * Containers's Handler for WebSocket transmissions with ioFog.
  *
  * @author ilaryionava
  */
 public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpObject> {
 
-    private IOFabricAPIListener listener;
+    private IOFogAPIListener listener;
 
-    public IOContainerRESTAPIHandler(IOFabricAPIListener listener){
+    public IOContainerRESTAPIHandler(IOFogAPIListener listener){
         this.listener = listener;
     }
 
@@ -41,25 +41,25 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                 listener.onBadRequest(json.toString());
                 channelHandlerContext.close();
             } else {
-                if (json.containsKey(IOFabricResponseUtils.CONFIG_FIELD_NAME)) {
-                    JsonString configString = json.getJsonString(IOFabricResponseUtils.CONFIG_FIELD_NAME);
+                if (json.containsKey(IOFogResponseUtils.CONFIG_FIELD_NAME)) {
+                    JsonString configString = json.getJsonString(IOFogResponseUtils.CONFIG_FIELD_NAME);
                     JsonReader configReader = Json.createReader(new StringReader(configString.getString()));
                     listener.onNewConfig(configReader.readObject());
                     channelHandlerContext.close();
                     return;
                 }
-                if (json.containsKey(IOFabricResponseUtils.MESSAGES_FIELD_NAME)) {
-                    JsonArray messagesJSON = json.getJsonArray(IOFabricResponseUtils.MESSAGES_FIELD_NAME);
+                if (json.containsKey(IOFogResponseUtils.MESSAGES_FIELD_NAME)) {
+                    JsonArray messagesJSON = json.getJsonArray(IOFogResponseUtils.MESSAGES_FIELD_NAME);
                     List<IOMessage> messagesList = new ArrayList<>(messagesJSON.size());
                     messagesJSON.forEach(message -> {
                         if (message instanceof JsonObject) {
                             messagesList.add(new IOMessage((JsonObject) message));
                         }
                     });
-                    if(json.containsKey(IOFabricResponseUtils.TIMEFRAME_START_FIELD_NAME) &&
-                            json.containsKey(IOFabricResponseUtils.TIMEFRAME_END_FIELD_NAME)) {
-                        listener.onMessagesQuery(Long.valueOf(json.getJsonNumber(IOFabricResponseUtils.TIMEFRAME_START_FIELD_NAME).toString()),
-                                Long.valueOf(json.getJsonNumber(IOFabricResponseUtils.TIMEFRAME_END_FIELD_NAME).toString()),
+                    if(json.containsKey(IOFogResponseUtils.TIMEFRAME_START_FIELD_NAME) &&
+                            json.containsKey(IOFogResponseUtils.TIMEFRAME_END_FIELD_NAME)) {
+                        listener.onMessagesQuery(Long.valueOf(json.getJsonNumber(IOFogResponseUtils.TIMEFRAME_START_FIELD_NAME).toString()),
+                                Long.valueOf(json.getJsonNumber(IOFogResponseUtils.TIMEFRAME_END_FIELD_NAME).toString()),
                                 messagesList);
                     } else {
                         listener.onMessages(messagesList);
@@ -67,8 +67,8 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                     channelHandlerContext.close();
                     return;
                 }
-                if(json.containsKey(IOFabricResponseUtils.ID_FIELD_NAME) && json.containsKey(IOFabricResponseUtils.TIMESTAMP_FIELD_NAME)) {
-                    listener.onMessageReceipt(json.getString(IOFabricResponseUtils.ID_FIELD_NAME), Long.valueOf(json.getString(IOFabricResponseUtils.TIMESTAMP_FIELD_NAME)));
+                if(json.containsKey(IOFogResponseUtils.ID_FIELD_NAME) && json.containsKey(IOFogResponseUtils.TIMESTAMP_FIELD_NAME)) {
+                    listener.onMessageReceipt(json.getString(IOFogResponseUtils.ID_FIELD_NAME), Long.valueOf(json.getString(IOFogResponseUtils.TIMESTAMP_FIELD_NAME)));
                     channelHandlerContext.close();
                     return;
                 }

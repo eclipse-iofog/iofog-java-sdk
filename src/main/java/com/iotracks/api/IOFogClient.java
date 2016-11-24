@@ -2,7 +2,7 @@ package com.iotracks.api;
 
 import com.iotracks.api.client.*;
 import com.iotracks.api.listener.*;
-import com.iotracks.utils.IOFabricLocalAPIURL;
+import com.iotracks.utils.IOFogLocalAPIURL;
 import com.iotracks.elements.IOMessage;
 import com.iotracks.api.handler.*;
 
@@ -25,13 +25,13 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 
 /**
- * IOFabricClient implements all methods to communicate with ioFabric (via local API).
+ * IOFogClient implements all methods to communicate with ioFog (via local API).
  *
  * @author ilaryionava
  */
-public class IOFabricClient {
+public class IOFogClient {
 
-    private static final Logger log = Logger.getLogger(IOFabricClient.class.getName());
+    private static final Logger log = Logger.getLogger(IOFogClient.class.getName());
 
     private final String ID_PARAM_NAME = "id";
     private final String TIMEFRAME_START_PARAM_NAME = "timeframestart";
@@ -59,11 +59,11 @@ public class IOFabricClient {
      * @param port - the listening port (bye default 54321)
      * @param containerId - container's ID that will be used for all requests
      */
-    public IOFabricClient(String host, int port, String containerId) {
+    public IOFogClient(String host, int port, String containerId) {
         if (!StringUtil.isNullOrEmpty(host)) {
             this.server = host;
         } else {
-            this.server = "iofabric";
+            this.server = "ioFog";
             if(!isHostReachable()){
                 log.warning("Host: " + server + " - is not reachable. Changing to default value: 127.0.0.1.");
                 this.server = "127.0.0.1";
@@ -81,16 +81,16 @@ public class IOFabricClient {
     }
 
     /**
-     * Method sends REST request to ioFabric based on parameters.
+     * Method sends REST request to ioFog based on parameters.
      *
      * @param url - request url
      * @param content - json representation of request's content
-     * @param listener - listener for REST communication with ioFabric
+     * @param listener - listener for REST communication with ioFog
      *
      */
-    private void sendRequest(IOFabricLocalAPIURL url, JsonObject content, IOFabricAPIListener listener){
+    private void sendRequest(IOFogLocalAPIURL url, JsonObject content, IOFogAPIListener listener){
         IOContainerRESTAPIHandler handler = new IOContainerRESTAPIHandler(listener);
-        IOFabricAPIConnector localAPIConnector = new IOFabricAPIConnector(handler, ssl);
+        IOFogAPIConnector localAPIConnector = new IOFogAPIConnector(handler, ssl);
         Channel channel;
         try {
             channel = localAPIConnector.initConnection(server, port);
@@ -99,7 +99,7 @@ public class IOFabricClient {
                 channel.closeFuture().sync();
             }
         } catch (ConnectException e) {
-            log.warning("Connection exception. Probably ioFabric is not reachable.");
+            log.warning("Connection exception. Probably ioFog is not reachable.");
         } catch (InterruptedException e) {
             log.warning("Error closing and synchronizing request channel.");
         }
@@ -113,7 +113,7 @@ public class IOFabricClient {
      *
      * @return HttpRequest
      */
-    private FullHttpRequest getRequest(IOFabricLocalAPIURL url, HttpMethod httpMethod, byte[] content){
+    private FullHttpRequest getRequest(IOFogLocalAPIURL url, HttpMethod httpMethod, byte[] content){
         ByteBuf contentBuf = Unpooled.copiedBuffer(content);
         FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, getURI(url, false).getRawPath(), contentBuf);
         request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, contentBuf.readableBytes());
@@ -123,22 +123,22 @@ public class IOFabricClient {
     }
 
     /**
-     * Method opens a WebSocket connection to ioFabric in a separate thread.
+     * Method opens a WebSocket connection to ioFog in a separate thread.
      *
      * @param wsType - WebSocket type for connection
-     * @param listener - listener for communication with ioFabric
+     * @param listener - listener for communication with ioFog
      *
      */
-    private void openWebSocketConnection(IOFabricLocalAPIURL wsType, IOFabricAPIListener listener){
+    private void openWebSocketConnection(IOFogLocalAPIURL wsType, IOFogAPIListener listener){
         IOContainerWSAPIHandler handler = new IOContainerWSAPIHandler(listener, getURI(wsType, true), elementID, wsType, this);
         IOWebSocketConnector wsConnector = new IOWebSocketConnector(handler, ssl, server, port);
         Thread thread = new Thread(wsConnector);
         thread.start();
-        if (wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
+        if (wsType == IOFogLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
             wsMessageHandler = handler;
             wsMessageConnector = wsConnector;
             wsMessageThread = thread;
-        } else if (wsType == IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API) {
+        } else if (wsType == IOFogLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API) {
             wsControlHandler = handler;
             wsControlConnector = wsConnector;
             wsControlThread = thread;
@@ -158,7 +158,7 @@ public class IOFabricClient {
     }
 
     /**
-     * Method sends IOMessage to ioFabric in case Message WebSocket connection is open.
+     * Method sends IOMessage to ioFog in case Message WebSocket connection is open.
      *
      * @param message - IOMessage to send
      *
@@ -169,7 +169,7 @@ public class IOFabricClient {
             if(wsMessageHandler != null) {
                 wsMessageHandler.sendMessage(elementID, message);
             } else {
-                log.warning("Message can be sent to ioFabric only if MessageWebSocket connection is established.");
+                log.warning("Message can be sent to ioFog only if MessageWebSocket connection is established.");
             }
         }
     }
@@ -177,34 +177,34 @@ public class IOFabricClient {
     /**
      * Method sends request for current Container's configurations.
      *
-     * @param listener - listener for communication with ioFabric
+     * @param listener - listener for communication with ioFog
      *
      */
-    public void fetchContainerConfig(IOFabricAPIListener listener){
-        sendRequest(IOFabricLocalAPIURL.GET_CONFIG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, elementID).build(), listener);
+    public void fetchContainerConfig(IOFogAPIListener listener){
+        sendRequest(IOFogLocalAPIURL.GET_CONFIG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, elementID).build(), listener);
     }
 
     /**
      * Method sends request for all Container's unread messages.
      *
-     * @param listener - listener for communication with ioFabric
+     * @param listener - listener for communication with ioFog
      *
      */
-    public void fetchNextMessage(IOFabricAPIListener listener){
-        sendRequest(IOFabricLocalAPIURL.GET_NEXT_MSG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, elementID).build(), listener);
+    public void fetchNextMessage(IOFogAPIListener listener){
+        sendRequest(IOFogLocalAPIURL.GET_NEXT_MSG_REST_LOCAL_API, Json.createObjectBuilder().add(ID_PARAM_NAME, elementID).build(), listener);
     }
 
     /**
      * Method sends request to post Container's new IOMessage to the system.
      *
      * @param message - new IOMessage
-     * @param listener - listener for communication with ioFabric
+     * @param listener - listener for communication with ioFog
      *
      */
-    public void pushNewMessage(IOMessage message , IOFabricAPIListener listener){
+    public void pushNewMessage(IOMessage message , IOFogAPIListener listener){
         if(message != null) {
             message.setPublisher(elementID);
-            sendRequest(IOFabricLocalAPIURL.POST_MSG_REST_LOCAL_API, message.getJson(), listener);
+            sendRequest(IOFogLocalAPIURL.POST_MSG_REST_LOCAL_API, message.getJson(), listener);
         }
     }
 
@@ -214,37 +214,37 @@ public class IOFabricClient {
      * @param startDate - start date of period
      * @param endDate - end date of period
      * @param publishers - set of publisher's IDs
-     * @param listener - listener for communication with ioFabric
+     * @param listener - listener for communication with ioFog
      *
      */
     public void fetchMessagesByQuery(Date startDate, Date endDate,
-                                                Set<String> publishers, IOFabricAPIListener listener){
+                                                Set<String> publishers, IOFogAPIListener listener){
         JsonObject json = Json.createObjectBuilder().add(ID_PARAM_NAME, elementID)
                 .add(TIMEFRAME_START_PARAM_NAME, startDate.getTime())
                 .add(TIMEFRAME_END_PARAM_NAME, endDate.getTime())
                 .add(PUBLISHERS_PARAM_NAME, publishers.toString())
                 .build();
-        sendRequest(IOFabricLocalAPIURL.GET_MSGS_QUERY_REST_LOCAL_API, json, listener);
+        sendRequest(IOFogLocalAPIURL.GET_MSGS_QUERY_REST_LOCAL_API, json, listener);
     }
 
     /**
-     * Method opens a Control WebSocket connection to ioFabric in a separate thread.
+     * Method opens a Control WebSocket connection to ioFog in a separate thread.
      *
-     * @param listener - listener for communication with ioFabric
+     * @param listener - listener for communication with ioFog
      *
      */
-    public void openControlWebSocket(IOFabricAPIListener listener){
-        openWebSocketConnection(IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API, listener);
+    public void openControlWebSocket(IOFogAPIListener listener){
+        openWebSocketConnection(IOFogLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API, listener);
     }
 
     /**
-     * Method opens a Message WebSocket connection to ioFabric in a separate thread.
+     * Method opens a Message WebSocket connection to ioFog in a separate thread.
      *
-     * @param listener - listener for communication with ioFabric
+     * @param listener - listener for communication with ioFog
      *
      */
-    public void openMessageWebSocket(IOFabricAPIListener listener){
-        openWebSocketConnection(IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API, listener);
+    public void openMessageWebSocket(IOFogAPIListener listener){
+        openWebSocketConnection(IOFogLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API, listener);
     }
 
     /**
@@ -255,7 +255,7 @@ public class IOFabricClient {
      *
      * @return URI
      */
-    private URI getURI(IOFabricLocalAPIURL url, boolean isWS){
+    private URI getURI(IOFogLocalAPIURL url, boolean isWS){
         StringBuilder urlBuilder = new StringBuilder();
         String protocol = isWS ? "ws" : "http";
         urlBuilder.append(protocol);
@@ -273,7 +273,7 @@ public class IOFabricClient {
     }
 
     /**
-     * Method checks if the host of IOFabricClient is reachable.
+     * Method checks if the host of IOFogClient is reachable.
      *
      * @return boolean
      */
@@ -287,19 +287,19 @@ public class IOFabricClient {
         }
     }
 
-    public void reconnect(IOFabricLocalAPIURL wsType, IOFabricAPIListener listener) {
+    public void reconnect(IOFogLocalAPIURL wsType, IOFogAPIListener listener) {
         int delay = 0;
         TimerTask wsTask = new WSTimerTask(wsType, listener);
         BigInteger constPow = new BigInteger("2");
         try{
-            if (wsType == IOFabricLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
+            if (wsType == IOFogLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
                 wsMessageConnector.terminate();
                 wsMessageThread.join();
                 if(wsReconnectMessageSocketAttempts < wsConnectAttemptsLimit) {
                     delay = wsConnectAttemptDelay * constPow.pow(wsReconnectMessageSocketAttempts).intValue();
                 }
                 wsReconnectMessageSocketAttempts++;
-            } else if (wsType == IOFabricLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API) {
+            } else if (wsType == IOFogLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API) {
                 wsControlConnector.terminate();
                 wsControlThread.join();
                 if(wsReconnectControlSocketAttempts < wsConnectAttemptsLimit) {
@@ -321,10 +321,10 @@ public class IOFabricClient {
 
     class WSTimerTask extends TimerTask {
 
-        private IOFabricLocalAPIURL wsType;
-        private IOFabricAPIListener listener;
+        private IOFogLocalAPIURL wsType;
+        private IOFogAPIListener listener;
 
-        public WSTimerTask(IOFabricLocalAPIURL wsType, IOFabricAPIListener listener){
+        public WSTimerTask(IOFogLocalAPIURL wsType, IOFogAPIListener listener){
             this.wsType = wsType;
             this.listener = listener;
         }
