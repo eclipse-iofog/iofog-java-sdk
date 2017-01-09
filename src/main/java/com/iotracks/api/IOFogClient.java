@@ -63,7 +63,7 @@ public class IOFogClient {
         if (!StringUtil.isNullOrEmpty(host)) {
             this.server = host;
         } else {
-            this.server = "ioFog";
+            this.server = "iofog";
             if(!isHostReachable()){
                 log.warning("Host: " + server + " - is not reachable. Changing to default value: 127.0.0.1.");
                 this.server = "127.0.0.1";
@@ -204,7 +204,7 @@ public class IOFogClient {
     public void pushNewMessage(IOMessage message , IOFogAPIListener listener){
         if(message != null) {
             message.setPublisher(elementID);
-            sendRequest(IOFogLocalAPIURL.POST_MSG_REST_LOCAL_API, message.getJson(), listener);
+            sendRequest(IOFogLocalAPIURL.POST_MSG_REST_LOCAL_API, message.getJson(true), listener);
         }
     }
 

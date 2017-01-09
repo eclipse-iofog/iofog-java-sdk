@@ -66,7 +66,7 @@ public class IOMessage {
         convertBytesToMessage(header, data, 0);
     }
 
-    public IOMessage(JsonObject json) {
+    public IOMessage(JsonObject json, boolean decode) {
         super();
         if (json.containsKey(ID_FIELD_NAME)){ setId(json.getString(ID_FIELD_NAME)); }
         if (json.containsKey(TAG_FIELD_NAME)){ setTag(json.getString(TAG_FIELD_NAME)); }
@@ -86,10 +86,18 @@ public class IOMessage {
         if (json.containsKey(INFO_TYPE_FIELD_NAME)){ setInfoType(json.getString(INFO_TYPE_FIELD_NAME)); }
         if (json.containsKey(INFO_FORMAT_FIELD_NAME)){ setInfoFormat(json.getString(INFO_FORMAT_FIELD_NAME)); }
         if (json.containsKey(CONTEXT_DATA_FIELD_NAME) ){
-            setContextData(IOMessageUtils.decodeBase64(json.getString(CONTEXT_DATA_FIELD_NAME).getBytes()));
+            if(decode) {
+                setContextData(IOMessageUtils.decodeBase64(json.getString(CONTEXT_DATA_FIELD_NAME).getBytes()));
+            } else {
+                setContextData(json.getString(CONTEXT_DATA_FIELD_NAME).getBytes());
+            }
         }
         if (json.containsKey(CONTENT_DATA_FIELD_NAME) ){
-            setContentData(IOMessageUtils.decodeBase64(json.getString(CONTENT_DATA_FIELD_NAME).getBytes()));
+            if(decode) {
+                setContentData(IOMessageUtils.decodeBase64(json.getString(CONTENT_DATA_FIELD_NAME).getBytes()));
+            } else {
+                setContentData(json.getString(CONTENT_DATA_FIELD_NAME).getBytes());
+            }
         }
     }
 
@@ -249,7 +257,22 @@ public class IOMessage {
         this.contentData = contentData;
     }
 
-    public JsonObject getJson(){
+    public JsonObject getJson(boolean encoded){
+        String contextData = "", contentData = "";
+        byte[] data = getContextData();
+        if(data != null) {
+            if(encoded) {
+                data = IOMessageUtils.encodeBase64(data);
+            }
+            contextData = new String(data);
+        }
+        data = getContentData();
+        if(data != null) {
+              if(encoded) {
+                  data = IOMessageUtils.encodeBase64(data);
+              }
+              contentData = new String(data);
+        }
         return Json.createObjectBuilder().add(ID_FIELD_NAME, getId())
                 .add(TAG_FIELD_NAME, getTag())
                 .add(GROUP_ID_FIELD_NAME, getGroupId())
@@ -268,8 +291,8 @@ public class IOMessage {
                 .add(DIFFICULTY_TARGET_FIELD_NAME, getDifficultyTarget())
                 .add(INFO_TYPE_FIELD_NAME, getInfoType())
                 .add(INFO_FORMAT_FIELD_NAME, getInfoFormat())
-                .add(CONTEXT_DATA_FIELD_NAME, getContextData()==null ? "" : new String(IOMessageUtils.encodeBase64(getContextData())))
-                .add(CONTENT_DATA_FIELD_NAME, getContentData()==null ? "" : new String(IOMessageUtils.encodeBase64(getContentData())))
+                .add(CONTEXT_DATA_FIELD_NAME,  contextData)
+                .add(CONTENT_DATA_FIELD_NAME, contentData)
                 .build();
     }
 
@@ -555,7 +578,7 @@ public class IOMessage {
 
     @Override
     public String toString() {
-        return "IOMessage{ " + getJson().toString() + " }";
+        return "IOMessage{ " + getJson(false).toString() + " }";
     }
     
     public JsonObject toJson() {

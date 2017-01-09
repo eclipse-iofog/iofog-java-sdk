@@ -53,7 +53,7 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
                     List<IOMessage> messagesList = new ArrayList<>(messagesJSON.size());
                     messagesJSON.forEach(message -> {
                         if (message instanceof JsonObject) {
-                            messagesList.add(new IOMessage((JsonObject) message));
+                            messagesList.add(new IOMessage((JsonObject) message, true));
                         }
                     });
                     if(json.containsKey(IOFogResponseUtils.TIMEFRAME_START_FIELD_NAME) &&
