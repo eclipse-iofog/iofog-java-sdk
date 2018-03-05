@@ -51,7 +51,7 @@ public class WebSocketManager {
         if (ctx != null){
             sendMessage(ctx, pData);
         }else{
-            new IllegalArgumentException("Context not found.");
+            throw new IllegalArgumentException("Context not found.");
         }
     }
 
@@ -89,7 +89,7 @@ public class WebSocketManager {
             sendControl(ctx);
         }
         else{
-            new IllegalArgumentException("Context not found.");
+            throw new IllegalArgumentException("Context not found.");
         }
     }
 
@@ -133,7 +133,7 @@ public class WebSocketManager {
 
     private void sendBinaryFrame(ChannelHandlerContext pCtx, byte[] pData){
         if(!isCtxActual(pCtx)){
-            new IllegalArgumentException("Context not found.");
+            throw new IllegalArgumentException("Context not found.");
         }
         ByteBuf buffer1 = pCtx.alloc().buffer();
         buffer1.writeBytes(pData);
@@ -151,10 +151,7 @@ public class WebSocketManager {
     }
 
     public void eatFrame(ChannelHandlerContext pCtx, WebSocketFrame pFrame){
-        boolean handled = false;
-        if(!handled){
-            handled = handleClose(pCtx, pFrame);
-        }
+        boolean handled = handleClose(pCtx, pFrame);
         if(!handled){
             handled = handlePing(pCtx, pFrame);
         }
@@ -184,6 +181,8 @@ public class WebSocketManager {
                 if(opcode == OPCODE_ACK.intValue()){
                     invalidateAck(pCtx);
                     return true;
+                } else {
+                    buffer2.resetReaderIndex();
                 }
             }
         }

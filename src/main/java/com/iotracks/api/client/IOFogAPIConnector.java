@@ -1,8 +1,12 @@
 package com.iotracks.api.client;
 
-import com.iotracks.api.handler.*;
+import com.iotracks.api.handler.IOContainerRESTAPIHandler;
+import com.iotracks.api.handler.IOContainerWSAPIHandler;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
@@ -85,17 +89,11 @@ public class IOFogAPIConnector {
         InetSocketAddress socketAddress = new InetSocketAddress(server, port);
         try {
             final ChannelFuture channelFuture = bootstrap.connect(socketAddress);
-            channelFuture.addListener(new GenericFutureListener<Future<Object>>() {
-                public void operationComplete(Future<Object> future){
-                    synchronized (lock) {
-                        if (!channelFuture.isSuccess()) {
-                            connectionSuccess = false;
-                        } else {
-                            connectionSuccess = true;
-                        }
-                        operationComplete = true;
-                        lock.notify();
-                    }
+            channelFuture.addListener((GenericFutureListener<Future<Object>>) future -> {
+                synchronized (lock) {
+                    connectionSuccess = channelFuture.isSuccess();
+                    operationComplete = true;
+                    lock.notify();
                 }
             });
             synchronized (lock) {

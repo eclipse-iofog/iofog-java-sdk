@@ -33,10 +33,10 @@ public class IOFogClient {
 
     private static final Logger log = Logger.getLogger(IOFogClient.class.getName());
 
-    private final String ID_PARAM_NAME = "id";
-    private final String TIMEFRAME_START_PARAM_NAME = "timeframestart";
-    private final String TIMEFRAME_END_PARAM_NAME = "timeframeend";
-    private final String PUBLISHERS_PARAM_NAME = "publishers";
+    private static final String ID_PARAM_NAME = "id";
+    private static final String TIMEFRAME_START_PARAM_NAME = "timeframestart";
+    private static final String TIMEFRAME_END_PARAM_NAME = "timeframeend";
+    private static final String PUBLISHERS_PARAM_NAME = "publishers";
 
     private String server;
     private int port;
@@ -280,9 +280,7 @@ public class IOFogClient {
     private boolean isHostReachable(){
         try {
             return InetAddress.getByName(server).isReachable(1000);
-        } catch (UnknownHostException e){
-            return false;
-        } catch (IOException e) {
+        } catch (IOException ex){
             return false;
         }
     }
