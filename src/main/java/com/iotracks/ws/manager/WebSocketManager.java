@@ -233,7 +233,7 @@ public class WebSocketManager {
 
     //todo ask Irina about pCtx removal
     private void invalidateAck(ChannelHandlerContext pCtx){
-        mControlWebsocketMap.remove(pCtx);
+        mControlSignalSendContextMap.remove(pCtx);
         mMessageSendContextMap.remove(pCtx);
     }
 
