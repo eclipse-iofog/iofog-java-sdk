@@ -39,7 +39,7 @@ public class IOWebSocketConnector implements Runnable {
             } catch (InterruptedException e) {
                 log.warning("Error synchronizing channel for WebSocket connection.");
                 caughtException = true;
-            } catch (ConnectException e) {
+            } catch (Exception e) {
                 log.warning("Socket Connection Error.");
                 caughtException = true;
             } finally {

@@ -88,7 +88,7 @@ public class IOFogClient {
      * @param listener - listener for REST communication with ioFog
      *
      */
-    private void sendRequest(IOFogLocalAPIURL url, JsonObject content, IOFogAPIListener listener){
+    private void sendRequest(IOFogLocalAPIURL url, JsonObject content, IOFogAPIListener listener) {
         IOContainerRESTAPIHandler handler = new IOContainerRESTAPIHandler(listener);
         IOFogAPIConnector localAPIConnector = new IOFogAPIConnector(handler, ssl);
         Channel channel;
@@ -98,10 +98,10 @@ public class IOFogClient {
                 channel.writeAndFlush(getRequest(url, HttpMethod.POST, content.toString().getBytes()));
                 channel.closeFuture().sync();
             }
-        } catch (ConnectException e) {
-            log.warning("Connection exception. Probably ioFog is not reachable.");
         } catch (InterruptedException e) {
             log.warning("Error closing and synchronizing request channel.");
+        } catch (Exception e) {
+            log.warning("Connection exception. Probably ioFog is not reachable.");
         }
     }
 

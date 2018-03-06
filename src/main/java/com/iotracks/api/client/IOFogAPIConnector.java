@@ -14,11 +14,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 
 import javax.net.ssl.SSLException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
@@ -33,9 +30,6 @@ public class IOFogAPIConnector {
 
     protected Bootstrap bootstrap;
     protected EventLoopGroup workerGroup;
-    private volatile Boolean connectionSuccess;
-    private volatile Boolean operationComplete = false;
-    private final Object lock = new Object();
 
     private Bootstrap init(){
         workerGroup = new NioEventLoopGroup();
@@ -85,38 +79,15 @@ public class IOFogAPIConnector {
      *
      * @return a channel bound to the specified server
      */
-    public Channel initConnection(String server, int port) throws ConnectException {
+    public Channel initConnection(String server, int port) throws InterruptedException {
         InetSocketAddress socketAddress = new InetSocketAddress(server, port);
-        try {
-            final ChannelFuture channelFuture = bootstrap.connect(socketAddress);
-            channelFuture.addListener((GenericFutureListener<Future<Object>>) future -> {
-                synchronized (lock) {
-                    connectionSuccess = channelFuture.isSuccess();
-                    operationComplete = true;
-                    lock.notify();
-                }
-            });
-            synchronized (lock) {
-                while(!operationComplete) {
-                    lock.wait();
-                }
-                if (connectionSuccess) {
-                    return channelFuture.sync().channel();
-                } else {
-                    throw new ConnectException("Error connecting to ioFog via WebSocket.");
-                }
-            }
-        } catch (InterruptedException e) {
-            log.warning("Error connection to specified address : " + socketAddress.toString());
-            return null;
-        }
+        final ChannelFuture channelFuture = bootstrap.connect(socketAddress);
+        return channelFuture.sync().channel();
     }
 
     private void addDefaultHandlers(boolean ssl, Channel channel) {
         if(ssl) {
            try {
-               /* SelfSignedCertificate ssc = new SelfSignedCertificate();
-                SslContext sslCtx =  SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();*/
                 SslContext sslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
                 channel.pipeline().addLast(sslCtx.newHandler(channel.alloc()));
            } catch (SSLException e) {
