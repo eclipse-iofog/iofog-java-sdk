@@ -7,10 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.websocketx.*;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
@@ -50,7 +47,7 @@ public class WebSocketManager {
         ChannelHandlerContext ctx = mMessageWebsocketMap.get(publisherId);
         if (ctx != null){
             sendMessage(ctx, pData);
-        }else{
+        } else {
             throw new IllegalArgumentException("Context not found.");
         }
     }
@@ -85,10 +82,9 @@ public class WebSocketManager {
 
     public void sendControl(String publisherId){
         ChannelHandlerContext ctx = mControlWebsocketMap.get(publisherId);
-        if (ctx != null){
+        if (ctx != null) {
             sendControl(ctx);
-        }
-        else{
+        } else {
             throw new IllegalArgumentException("Context not found.");
         }
     }
@@ -208,6 +204,8 @@ public class WebSocketManager {
                         mPingSendMap.remove(pCtx);
                         return true;
                     }
+                } else {
+                    buffer.resetReaderIndex();
                 }
             }
         }
@@ -225,12 +223,15 @@ public class WebSocketManager {
                         sendFrame(pCtx, new PongWebSocketFrame(buffer1));
                         return true;
                     }
+                } else {
+                    buffer.resetReaderIndex();
                 }
             }
         }
         return false;
     }
 
+    //todo ask Irina about pCtx removal
     private void invalidateAck(ChannelHandlerContext pCtx){
         mControlWebsocketMap.remove(pCtx);
         mMessageSendContextMap.remove(pCtx);
@@ -287,8 +288,10 @@ public class WebSocketManager {
         return mMessageSendContextMap.get(pCtx).getData();
     }
 
-    private static void initSocket(ChannelHandlerContext pCtx, String pContainerId, boolean pSsl, String pUrl, FullHttpRequest pReq, Map<String, ChannelHandlerContext> pSocketMap){
-        WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(buildWebSocketLocation(pSsl, pUrl, pReq), null, true);
+    private static void initSocket(ChannelHandlerContext pCtx, String pContainerId, boolean pSsl, String pUrl,
+                                   FullHttpRequest pReq, Map<String, ChannelHandlerContext> pSocketMap){
+        WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
+                buildWebSocketLocation(pSsl, pUrl, pReq), null, true);
         WebSocketServerHandshaker handshaker = wsFactory.newHandshaker(pReq);
         if (handshaker == null) {
             WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(pCtx.channel());

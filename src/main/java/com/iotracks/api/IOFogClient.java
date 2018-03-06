@@ -218,8 +218,9 @@ public class IOFogClient {
      *
      */
     public void fetchMessagesByQuery(Date startDate, Date endDate,
-                                                Set<String> publishers, IOFogAPIListener listener){
-        JsonObject json = Json.createObjectBuilder().add(ID_PARAM_NAME, elementID)
+                                     Set<String> publishers, IOFogAPIListener listener){
+        JsonObject json = Json.createObjectBuilder()
+                .add(ID_PARAM_NAME, elementID)
                 .add(TIMEFRAME_START_PARAM_NAME, startDate.getTime())
                 .add(TIMEFRAME_END_PARAM_NAME, endDate.getTime())
                 .add(PUBLISHERS_PARAM_NAME, publishers.toString())
