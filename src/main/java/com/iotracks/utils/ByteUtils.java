@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class ByteUtils {
 
     public static byte[] copyOfRange(byte[] src, int from, int to) {
-        return Arrays.copyOfRange(src, from, to);
+        return (from < 0 || from >= src.length || to < from || to > src.length) ? new byte[]{} : Arrays.copyOfRange(src, from, to);
     }
 
     public static byte[] longToBytes(long x) {
