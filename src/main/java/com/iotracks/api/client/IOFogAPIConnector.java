@@ -79,10 +79,15 @@ public class IOFogAPIConnector {
      *
      * @return a channel bound to the specified server
      */
-    public Channel initConnection(String server, int port) throws InterruptedException {
+    public Channel initConnection(String server, int port) {
         InetSocketAddress socketAddress = new InetSocketAddress(server, port);
         final ChannelFuture channelFuture = bootstrap.connect(socketAddress);
-        return channelFuture.sync().channel();
+        try {
+            return channelFuture.sync().channel();
+        } catch (InterruptedException ex) {
+            log.warning("Error connection to specified address : " + socketAddress.toString());
+            return null;
+        }
     }
 
     private void addDefaultHandlers(boolean ssl, Channel channel) {

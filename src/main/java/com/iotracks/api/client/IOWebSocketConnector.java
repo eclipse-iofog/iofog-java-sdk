@@ -2,7 +2,6 @@ package com.iotracks.api.client;
 
 import com.iotracks.api.handler.IOContainerWSAPIHandler;
 
-import java.net.ConnectException;
 import java.util.logging.Logger;
 
 /**
@@ -40,7 +39,7 @@ public class IOWebSocketConnector implements Runnable {
                 log.warning("Error synchronizing channel for WebSocket connection.");
                 caughtException = true;
             } catch (Exception e) {
-                log.warning("Socket Connection Error.");
+                log.warning("Connection exception. Probably ioFog is not reachable.");
                 caughtException = true;
             } finally {
                 lock.notifyAll();
