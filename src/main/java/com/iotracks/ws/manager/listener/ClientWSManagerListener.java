@@ -11,7 +11,6 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.logging.Logger;
 
 /**
  * Implementation of {@link WebSocketManagerListener}.
@@ -25,8 +24,6 @@ import java.util.logging.Logger;
  * @author ilaryionava
  */
 public class ClientWSManagerListener implements WebSocketManagerListener {
-
-    private static final Logger log = Logger.getLogger(ClientWSManagerListener.class.getName());
 
     private IOFogAPIListener wsListener;
     private IOFogLocalAPIURL wsType;
@@ -47,36 +44,58 @@ public class ClientWSManagerListener implements WebSocketManagerListener {
             int readerIndex = content.readerIndex();
             content.getBytes(readerIndex, byteArray);
             byte opcode = byteArray[0];
-            if (opcode == WebSocketManager.OPCODE_CONTROL_SIGNAL.intValue() && wsType == IOFogLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API
-                /*&& byteArray.length == 1*/) {
-                wsListener.onNewConfigSignal();
-                wsManager.sendAck(ctx);
-            } else if (opcode == WebSocketManager.OPCODE_MSG.intValue() && wsType == IOFogLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
-                int totalMsgLength = ByteUtils.bytesToInteger(Arrays.copyOfRange(byteArray, 1, 5));
-                int msgLength = totalMsgLength + 5;
-                IOMessage message = new IOMessage(Arrays.copyOfRange(byteArray, 5, msgLength));
-                wsListener.onMessages(Collections.singletonList(message));
-                wsManager.sendAck(ctx);
-            } else if (opcode == WebSocketManager.OPCODE_RECEIPT.intValue() && wsType == IOFogLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API) {
-                int size = byteArray[1];
-                int pos = 3;
-                String messageId = "";
-                if (size > 0) {
-                    messageId = ByteUtils.bytesToString(Arrays.copyOfRange(byteArray, pos, pos + size));
-                    pos += size;
-                }
-                size = byteArray[2];
-                long timestamp = 0L;
-                if (size > 0) {
-                    timestamp = ByteUtils.bytesToLong(Arrays.copyOfRange(byteArray, pos, pos + size));
-                }
-                IOMessage message = new IOMessage(wsManager.getMessage(ctx));
-                message.setId(messageId);
-                message.setTimestamp(timestamp);
-                wsListener.onMessageReceipt(messageId, timestamp);
-                wsManager.sendAck(ctx);
+            if (isControlSignal(opcode)) {
+                handleNewConfigSignal(wsManager, ctx);
+            } else if (isNewMessage(opcode)) {
+                handleNewMessage(byteArray, wsManager, ctx);
+            } else if (isMessageReceipt(opcode)) {
+                handleMessageReceipt(byteArray, wsManager, ctx);
             }
         }
     }
 
+    private void handleNewConfigSignal(WebSocketManager wsManager, ChannelHandlerContext ctx) {
+        wsListener.onNewConfigSignal();
+        wsManager.sendAck(ctx);
+    }
+
+    private void handleNewMessage(byte[] byteArray, WebSocketManager wsManager, ChannelHandlerContext ctx) {
+        int totalMsgLength = ByteUtils.bytesToInteger(Arrays.copyOfRange(byteArray, 1, 5));
+        int msgLength = totalMsgLength + 5;
+        IOMessage message = new IOMessage(Arrays.copyOfRange(byteArray, 5, msgLength));
+        wsListener.onMessages(Collections.singletonList(message));
+        wsManager.sendAck(ctx);
+    }
+
+    private void handleMessageReceipt(byte[] byteArray, WebSocketManager wsManager, ChannelHandlerContext ctx) {
+        int size = byteArray[1];
+        int pos = 3;
+        String messageId = "";
+        if (size > 0) {
+            messageId = ByteUtils.bytesToString(Arrays.copyOfRange(byteArray, pos, pos + size));
+            pos += size;
+        }
+        size = byteArray[2];
+        long timestamp = 0L;
+        if (size > 0) {
+            timestamp = ByteUtils.bytesToLong(Arrays.copyOfRange(byteArray, pos, pos + size));
+        }
+        IOMessage message = new IOMessage(wsManager.getMessage(ctx));
+        message.setId(messageId);
+        message.setTimestamp(timestamp);
+        wsListener.onMessageReceipt(messageId, timestamp);
+        wsManager.sendAck(ctx);
+    }
+
+    private boolean isControlSignal(byte opcode) {
+        return opcode == WebSocketManager.OPCODE_CONTROL_SIGNAL.intValue() && wsType == IOFogLocalAPIURL.GET_CONTROL_WEB_SOCKET_LOCAL_API;
+    }
+
+    private boolean isNewMessage(byte opcode) {
+        return opcode == WebSocketManager.OPCODE_MSG.intValue() && wsType == IOFogLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API;
+    }
+
+    private boolean isMessageReceipt(byte opcode) {
+        return opcode == WebSocketManager.OPCODE_RECEIPT.intValue() && wsType == IOFogLocalAPIURL.GET_MSG_WEB_SOCKET_LOCAL_API;
+    }
 }

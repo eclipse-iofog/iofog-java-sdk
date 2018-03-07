@@ -31,12 +31,16 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
     private IOFogAPIListener wsListener;
     private IOFogClient ioFogClient;
 
-    public IOContainerWSAPIHandler(IOFogAPIListener listener, URI uri, String containerId, IOFogLocalAPIURL wsType, IOFogClient ioFogClient){
-        this.handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders(), Integer.MAX_VALUE);
+    public IOContainerWSAPIHandler(IOFogAPIListener wsListener,
+                                   URI uri, String containerId,
+                                   IOFogLocalAPIURL wsType,
+                                   IOFogClient ioFogClient) {
+        this.handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null,
+                false, new DefaultHttpHeaders(), Integer.MAX_VALUE);
         this.containerId = containerId;
         this.wsType = wsType;
-        wsManager = new WebSocketManager(new ClientWSManagerListener(listener, wsType));
-        wsListener = listener;
+        this.wsManager = new WebSocketManager(new ClientWSManagerListener(wsListener, wsType));
+        this.wsListener = wsListener;
         this.ioFogClient = ioFogClient;
     }
 
@@ -76,7 +80,7 @@ public class IOContainerWSAPIHandler extends SimpleChannelInboundHandler {
                     break;
             }
         }
-        if (o instanceof WebSocketFrame ){
+        if (o instanceof WebSocketFrame) {
             wsManager.eatFrame(channelHandlerContext, (WebSocketFrame) o);
         }
     }

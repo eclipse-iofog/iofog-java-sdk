@@ -1,8 +1,12 @@
 package com.iotracks.api.client;
 
-import com.iotracks.api.handler.*;
+import com.iotracks.api.handler.IOContainerRESTAPIHandler;
+import com.iotracks.api.handler.IOContainerWSAPIHandler;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
@@ -10,11 +14,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 
 import javax.net.ssl.SSLException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
@@ -29,9 +30,6 @@ public class IOFogAPIConnector {
 
     protected Bootstrap bootstrap;
     protected EventLoopGroup workerGroup;
-    private volatile Boolean connectionSuccess;
-    private volatile Boolean operationComplete = false;
-    private final Object lock = new Object();
 
     private Bootstrap init(){
         workerGroup = new NioEventLoopGroup();
@@ -81,34 +79,12 @@ public class IOFogAPIConnector {
      *
      * @return a channel bound to the specified server
      */
-    public Channel initConnection(String server, int port) throws ConnectException {
+    public Channel initConnection(String server, int port) {
         InetSocketAddress socketAddress = new InetSocketAddress(server, port);
+        final ChannelFuture channelFuture = bootstrap.connect(socketAddress);
         try {
-            final ChannelFuture channelFuture = bootstrap.connect(socketAddress);
-            channelFuture.addListener(new GenericFutureListener<Future<Object>>() {
-                public void operationComplete(Future<Object> future){
-                    synchronized (lock) {
-                        if (!channelFuture.isSuccess()) {
-                            connectionSuccess = false;
-                        } else {
-                            connectionSuccess = true;
-                        }
-                        operationComplete = true;
-                        lock.notify();
-                    }
-                }
-            });
-            synchronized (lock) {
-                while(!operationComplete) {
-                    lock.wait();
-                }
-                if (connectionSuccess) {
-                    return channelFuture.sync().channel();
-                } else {
-                    throw new ConnectException("Error connecting to ioFog via WebSocket.");
-                }
-            }
-        } catch (InterruptedException e) {
+            return channelFuture.sync().channel();
+        } catch (InterruptedException ex) {
             log.warning("Error connection to specified address : " + socketAddress.toString());
             return null;
         }
@@ -117,8 +93,6 @@ public class IOFogAPIConnector {
     private void addDefaultHandlers(boolean ssl, Channel channel) {
         if(ssl) {
            try {
-               /* SelfSignedCertificate ssc = new SelfSignedCertificate();
-                SslContext sslCtx =  SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();*/
                 SslContext sslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
                 channel.pipeline().addLast(sslCtx.newHandler(channel.alloc()));
            } catch (SSLException e) {

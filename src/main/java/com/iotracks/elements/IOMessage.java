@@ -14,26 +14,26 @@ public class IOMessage {
 
     private final short VERSION = 4;
 
-    public static final String ID_FIELD_NAME = "id";
-    public static final String TAG_FIELD_NAME = "tag";
-    public static final String GROUP_ID_FIELD_NAME = "groupid";
-    public static final String SEQUENCE_NUMBER_FIELD_NAME = "sequencenumber";
-    public static final String SEQUENCE_TOTAL_FIELD_NAME = "sequencetotal";
-    public static final String PRIORITY_FIELD_NAME = "priority";
-    public static final String TIMESTAMP_FIELD_NAME = "timestamp";
-    public static final String PUBLISHER_FIELD_NAME = "publisher";
-    public static final String AUTH_ID_FIELD_NAME = "authid";
-    public static final String AUTH_GROUP_FIELD_NAME = "authgroup";
-    public static final String VERSION_FIELD_NAME = "version";
-    public static final String CHAIN_POSITION_FIELD_NAME = "chainposition";
-    public static final String HASH_FIELD_NAME = "hash";
-    public static final String PREVIOUS_HASH_FIELD_NAME = "previoushash";
-    public static final String NONCE_FIELD_NAME = "nonce";
-    public static final String DIFFICULTY_TARGET_FIELD_NAME = "difficultytarget";
-    public static final String INFO_TYPE_FIELD_NAME = "infotype";
-    public static final String INFO_FORMAT_FIELD_NAME = "infoformat";
-    public static final String CONTEXT_DATA_FIELD_NAME = "contextdata";
-    public static final String CONTENT_DATA_FIELD_NAME = "contentdata";
+    private static final String ID_FIELD_NAME = "id";
+    private static final String TAG_FIELD_NAME = "tag";
+    private static final String GROUP_ID_FIELD_NAME = "groupid";
+    private static final String SEQUENCE_NUMBER_FIELD_NAME = "sequencenumber";
+    private static final String SEQUENCE_TOTAL_FIELD_NAME = "sequencetotal";
+    private static final String PRIORITY_FIELD_NAME = "priority";
+    private static final String TIMESTAMP_FIELD_NAME = "timestamp";
+    private static final String PUBLISHER_FIELD_NAME = "publisher";
+    private static final String AUTH_ID_FIELD_NAME = "authid";
+    private static final String AUTH_GROUP_FIELD_NAME = "authgroup";
+    private static final String VERSION_FIELD_NAME = "version";
+    private static final String CHAIN_POSITION_FIELD_NAME = "chainposition";
+    private static final String HASH_FIELD_NAME = "hash";
+    private static final String PREVIOUS_HASH_FIELD_NAME = "previoushash";
+    private static final String NONCE_FIELD_NAME = "nonce";
+    private static final String DIFFICULTY_TARGET_FIELD_NAME = "difficultytarget";
+    private static final String INFO_TYPE_FIELD_NAME = "infotype";
+    private static final String INFO_FORMAT_FIELD_NAME = "infoformat";
+    private static final String CONTEXT_DATA_FIELD_NAME = "contextdata";
+    private static final String CONTENT_DATA_FIELD_NAME = "contentdata";
 
     private String id = ""; // required
     private String tag = "";
@@ -264,14 +264,18 @@ public class IOMessage {
             if(encoded) {
                 data = IOMessageUtils.encodeBase64(data);
             }
-            contextData = new String(data);
+            if (data != null) {
+                contextData = new String(data);
+            }
         }
         data = getContentData();
         if(data != null) {
               if(encoded) {
                   data = IOMessageUtils.encodeBase64(data);
               }
-              contentData = new String(data);
+              if (data != null) {
+                  contentData = new String(data);
+              }
         }
         return Json.createObjectBuilder().add(ID_FIELD_NAME, getId())
                 .add(TAG_FIELD_NAME, getTag())

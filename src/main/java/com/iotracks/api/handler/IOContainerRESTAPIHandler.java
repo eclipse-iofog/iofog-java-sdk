@@ -2,7 +2,6 @@ package com.iotracks.api.handler;
 
 import com.iotracks.api.listener.IOFogAPIListener;
 import com.iotracks.elements.IOMessage;
-import com.iotracks.utils.IOFogResponseUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -12,8 +11,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import javax.json.*;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.iotracks.utils.IOFogResponseUtils.*;
+import static java.util.stream.Collectors.toList;
 
 
 /**
@@ -37,43 +38,54 @@ public class IOContainerRESTAPIHandler extends SimpleChannelInboundHandler<HttpO
             String responseBody = content.toString(io.netty.util.CharsetUtil.US_ASCII);
             JsonReader reader = Json.createReader(new StringReader(responseBody));
             JsonObject json = reader.readObject();
-            if(response.getStatus() == HttpResponseStatus.BAD_REQUEST) {
-                listener.onBadRequest(json.toString());
-                channelHandlerContext.close();
+            if (response.getStatus() == HttpResponseStatus.BAD_REQUEST) {
+                handleBadRequest(json, channelHandlerContext);
             } else {
-                if (json.containsKey(IOFogResponseUtils.CONFIG_FIELD_NAME)) {
-                    JsonString configString = json.getJsonString(IOFogResponseUtils.CONFIG_FIELD_NAME);
-                    JsonReader configReader = Json.createReader(new StringReader(configString.getString()));
-                    listener.onNewConfig(configReader.readObject());
-                    channelHandlerContext.close();
-                    return;
-                }
-                if (json.containsKey(IOFogResponseUtils.MESSAGES_FIELD_NAME)) {
-                    JsonArray messagesJSON = json.getJsonArray(IOFogResponseUtils.MESSAGES_FIELD_NAME);
-                    List<IOMessage> messagesList = new ArrayList<>(messagesJSON.size());
-                    messagesJSON.forEach(message -> {
-                        if (message instanceof JsonObject) {
-                            messagesList.add(new IOMessage((JsonObject) message, true));
-                        }
-                    });
-                    if(json.containsKey(IOFogResponseUtils.TIMEFRAME_START_FIELD_NAME) &&
-                            json.containsKey(IOFogResponseUtils.TIMEFRAME_END_FIELD_NAME)) {
-                        listener.onMessagesQuery(Long.valueOf(json.getJsonNumber(IOFogResponseUtils.TIMEFRAME_START_FIELD_NAME).toString()),
-                                Long.valueOf(json.getJsonNumber(IOFogResponseUtils.TIMEFRAME_END_FIELD_NAME).toString()),
-                                messagesList);
-                    } else {
-                        listener.onMessages(messagesList);
-                    }
-                    channelHandlerContext.close();
-                    return;
-                }
-                if(json.containsKey(IOFogResponseUtils.ID_FIELD_NAME) && json.containsKey(IOFogResponseUtils.TIMESTAMP_FIELD_NAME)) {
-                    listener.onMessageReceipt(json.getString(IOFogResponseUtils.ID_FIELD_NAME), Long.valueOf(json.getString(IOFogResponseUtils.TIMESTAMP_FIELD_NAME)));
-                    channelHandlerContext.close();
-                    return;
+                if (isNewConfig(json)) {
+                    handleNewConfig(json, channelHandlerContext);
+                } else if (isNewMessage(json)) {
+                    handleNewMessage(json, channelHandlerContext);
+                } else if (isMessageReceipt(json)) {
+                    handleMessageReceipt(json, channelHandlerContext);
                 }
             }
         }
+    }
+
+    private void handleNewConfig(JsonObject json, ChannelHandlerContext channelHandlerContext) {
+        JsonString configString = json.getJsonString(CONFIG_FIELD_NAME);
+        JsonReader configReader = Json.createReader(new StringReader(configString.getString()));
+        listener.onNewConfig(configReader.readObject());
+        channelHandlerContext.close();
+    }
+
+    private void handleNewMessage(JsonObject json, ChannelHandlerContext channelHandlerContext) {
+        JsonArray messagesJSON = json.getJsonArray(MESSAGES_FIELD_NAME);
+
+        List<IOMessage> messagesList = messagesJSON.stream()
+                .filter(message -> message instanceof JsonObject)
+                .map(message -> new IOMessage((JsonObject) message, true))
+                .collect(toList());
+
+        if(isMessageQuery(json)) {
+            listener.onMessagesQuery(Long.valueOf(json.getJsonNumber(TIMEFRAME_START_FIELD_NAME).toString()),
+                    Long.valueOf(json.getJsonNumber(TIMEFRAME_END_FIELD_NAME).toString()),
+                    messagesList);
+        } else {
+            listener.onMessages(messagesList);
+        }
+        channelHandlerContext.close();
+    }
+
+    private void handleBadRequest(JsonObject json, ChannelHandlerContext channelHandlerContext) {
+        listener.onBadRequest(json.toString());
+        channelHandlerContext.close();
+    }
+
+    private void handleMessageReceipt(JsonObject json, ChannelHandlerContext channelHandlerContext) {
+        listener.onMessageReceipt(json.getString(ID_FIELD_NAME),
+                Long.valueOf(json.getString(TIMESTAMP_FIELD_NAME)));
+        channelHandlerContext.close();
     }
 
     @Override

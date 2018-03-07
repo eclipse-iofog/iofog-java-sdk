@@ -1,8 +1,7 @@
 package com.iotracks.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Utils class for convenient byte transformations.
@@ -11,15 +10,7 @@ import java.nio.ByteBuffer;
 public class ByteUtils {
 
     public static byte[] copyOfRange(byte[] src, int from, int to) {
-        byte[] tmp = new byte[from];
-        byte[] result = new byte[to - from];
-        ByteArrayInputStream input = new ByteArrayInputStream(src);
-        input.read(tmp, 0, tmp.length);
-        input.read(result, 0, result.length);
-        try {
-            input.close();
-        } catch (IOException e) {}
-        return result;
+        return (from < 0 || from >= src.length || to < from || to > src.length) ? new byte[]{} : Arrays.copyOfRange(src, from, to);
     }
 
     public static byte[] longToBytes(long x) {
@@ -32,8 +23,8 @@ public class ByteUtils {
 
     public static long bytesToLong(byte[] bytes) {
         long result = 0;
-        for (int i = 0; i < bytes.length; i++) {
-            result = (result << 8) + (bytes[i] & 0xff);
+        for (byte aByte : bytes) {
+            result = (result << 8) + (aByte & 0xff);
         }
         return result;
     }
@@ -48,8 +39,8 @@ public class ByteUtils {
 
     public static int bytesToInteger(byte[] bytes) {
         int result = 0;
-        for (int i = 0; i < bytes.length; i++) {
-            result = (result << 8) + (bytes[i] & 0xff);
+        for (byte aByte : bytes) {
+            result = (result << 8) + (aByte & 0xff);
         }
         return result;
     }
@@ -64,8 +55,8 @@ public class ByteUtils {
 
     public static short bytesToShort(byte[] bytes) {
         short result = 0;
-        for (int i = 0; i < bytes.length; i++) {
-            result = (short) ((result << 8) + (bytes[i] & 0xff));
+        for (byte aByte : bytes) {
+            result = (short) ((result << 8) + (aByte & 0xff));
         }
         return result;
     }

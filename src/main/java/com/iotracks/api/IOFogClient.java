@@ -33,10 +33,10 @@ public class IOFogClient {
 
     private static final Logger log = Logger.getLogger(IOFogClient.class.getName());
 
-    private final String ID_PARAM_NAME = "id";
-    private final String TIMEFRAME_START_PARAM_NAME = "timeframestart";
-    private final String TIMEFRAME_END_PARAM_NAME = "timeframeend";
-    private final String PUBLISHERS_PARAM_NAME = "publishers";
+    private static final String ID_PARAM_NAME = "id";
+    private static final String TIMEFRAME_START_PARAM_NAME = "timeframestart";
+    private static final String TIMEFRAME_END_PARAM_NAME = "timeframeend";
+    private static final String PUBLISHERS_PARAM_NAME = "publishers";
 
     private String server;
     private int port;
@@ -88,7 +88,7 @@ public class IOFogClient {
      * @param listener - listener for REST communication with ioFog
      *
      */
-    private void sendRequest(IOFogLocalAPIURL url, JsonObject content, IOFogAPIListener listener){
+    private void sendRequest(IOFogLocalAPIURL url, JsonObject content, IOFogAPIListener listener) {
         IOContainerRESTAPIHandler handler = new IOContainerRESTAPIHandler(listener);
         IOFogAPIConnector localAPIConnector = new IOFogAPIConnector(handler, ssl);
         Channel channel;
@@ -98,10 +98,10 @@ public class IOFogClient {
                 channel.writeAndFlush(getRequest(url, HttpMethod.POST, content.toString().getBytes()));
                 channel.closeFuture().sync();
             }
-        } catch (ConnectException e) {
-            log.warning("Connection exception. Probably ioFog is not reachable.");
         } catch (InterruptedException e) {
             log.warning("Error closing and synchronizing request channel.");
+        } catch (Exception e) {
+            log.warning("Connection exception. Probably ioFog is not reachable.");
         }
     }
 
@@ -218,8 +218,9 @@ public class IOFogClient {
      *
      */
     public void fetchMessagesByQuery(Date startDate, Date endDate,
-                                                Set<String> publishers, IOFogAPIListener listener){
-        JsonObject json = Json.createObjectBuilder().add(ID_PARAM_NAME, elementID)
+                                     Set<String> publishers, IOFogAPIListener listener){
+        JsonObject json = Json.createObjectBuilder()
+                .add(ID_PARAM_NAME, elementID)
                 .add(TIMEFRAME_START_PARAM_NAME, startDate.getTime())
                 .add(TIMEFRAME_END_PARAM_NAME, endDate.getTime())
                 .add(PUBLISHERS_PARAM_NAME, publishers.toString())
@@ -280,9 +281,7 @@ public class IOFogClient {
     private boolean isHostReachable(){
         try {
             return InetAddress.getByName(server).isReachable(1000);
-        } catch (UnknownHostException e){
-            return false;
-        } catch (IOException e) {
+        } catch (IOException ex){
             return false;
         }
     }

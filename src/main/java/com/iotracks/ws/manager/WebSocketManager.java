@@ -7,10 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.websocketx.*;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
@@ -50,8 +47,8 @@ public class WebSocketManager {
         ChannelHandlerContext ctx = mMessageWebsocketMap.get(publisherId);
         if (ctx != null){
             sendMessage(ctx, pData);
-        }else{
-            new IllegalArgumentException("Context not found.");
+        } else {
+            throw new IllegalArgumentException("Context not found.");
         }
     }
 
@@ -85,11 +82,10 @@ public class WebSocketManager {
 
     public void sendControl(String publisherId){
         ChannelHandlerContext ctx = mControlWebsocketMap.get(publisherId);
-        if (ctx != null){
+        if (ctx != null) {
             sendControl(ctx);
-        }
-        else{
-            new IllegalArgumentException("Context not found.");
+        } else {
+            throw new IllegalArgumentException("Context not found.");
         }
     }
 
@@ -133,7 +129,7 @@ public class WebSocketManager {
 
     private void sendBinaryFrame(ChannelHandlerContext pCtx, byte[] pData){
         if(!isCtxActual(pCtx)){
-            new IllegalArgumentException("Context not found.");
+            throw new IllegalArgumentException("Context not found.");
         }
         ByteBuf buffer1 = pCtx.alloc().buffer();
         buffer1.writeBytes(pData);
@@ -151,10 +147,7 @@ public class WebSocketManager {
     }
 
     public void eatFrame(ChannelHandlerContext pCtx, WebSocketFrame pFrame){
-        boolean handled = false;
-        if(!handled){
-            handled = handleClose(pCtx, pFrame);
-        }
+        boolean handled = handleClose(pCtx, pFrame);
         if(!handled){
             handled = handlePing(pCtx, pFrame);
         }
@@ -184,6 +177,8 @@ public class WebSocketManager {
                 if(opcode == OPCODE_ACK.intValue()){
                     invalidateAck(pCtx);
                     return true;
+                } else {
+                    buffer2.resetReaderIndex();
                 }
             }
         }
@@ -209,6 +204,8 @@ public class WebSocketManager {
                         mPingSendMap.remove(pCtx);
                         return true;
                     }
+                } else {
+                    buffer.resetReaderIndex();
                 }
             }
         }
@@ -226,14 +223,17 @@ public class WebSocketManager {
                         sendFrame(pCtx, new PongWebSocketFrame(buffer1));
                         return true;
                     }
+                } else {
+                    buffer.resetReaderIndex();
                 }
             }
         }
         return false;
     }
 
+    //todo ask Irina about pCtx removal
     private void invalidateAck(ChannelHandlerContext pCtx){
-        mControlWebsocketMap.remove(pCtx);
+        mControlSignalSendContextMap.remove(pCtx);
         mMessageSendContextMap.remove(pCtx);
     }
 
@@ -288,8 +288,10 @@ public class WebSocketManager {
         return mMessageSendContextMap.get(pCtx).getData();
     }
 
-    private static void initSocket(ChannelHandlerContext pCtx, String pContainerId, boolean pSsl, String pUrl, FullHttpRequest pReq, Map<String, ChannelHandlerContext> pSocketMap){
-        WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(buildWebSocketLocation(pSsl, pUrl, pReq), null, true);
+    private static void initSocket(ChannelHandlerContext pCtx, String pContainerId, boolean pSsl, String pUrl,
+                                   FullHttpRequest pReq, Map<String, ChannelHandlerContext> pSocketMap){
+        WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
+                buildWebSocketLocation(pSsl, pUrl, pReq), null, true);
         WebSocketServerHandshaker handshaker = wsFactory.newHandshaker(pReq);
         if (handshaker == null) {
             WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(pCtx.channel());
