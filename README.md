@@ -1,4 +1,4 @@
-# container-sdk-java
+# iofog-java-sdk
 
 This module lets you easily build an ioElement. It gives you all the functionality to interact with ioFog via Local API. Additionally some useful methods to work with ioMessage.
 

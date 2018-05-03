@@ -1,4 +1,4 @@
-package com.iotracks.utils;
+package org.eclipse.iofog.utils;
 
 /**
  * Enum for all ioFog's Local API requests URLs

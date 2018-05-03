@@ -1,6 +1,6 @@
-package com.iotracks.api.listener;
+package org.eclipse.iofog.api.listener;
 
-import com.iotracks.elements.IOMessage;
+import org.eclipse.iofog.elements.IOMessage;
 
 import javax.json.JsonObject;
 import java.util.List;

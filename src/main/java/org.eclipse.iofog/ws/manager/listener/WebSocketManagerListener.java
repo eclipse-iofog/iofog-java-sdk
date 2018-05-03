@@ -1,6 +1,6 @@
-package com.iotracks.ws.manager.listener;
+package org.eclipse.iofog.ws.manager.listener;
 
-import com.iotracks.ws.manager.WebSocketManager;
+import org.eclipse.iofog.ws.manager.WebSocketManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 

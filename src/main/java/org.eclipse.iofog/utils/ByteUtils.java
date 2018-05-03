@@ -1,4 +1,4 @@
-package com.iotracks.utils;
+package org.eclipse.iofog.utils;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

@@ -1,7 +1,7 @@
-package com.iotracks.ws.manager;
+package org.eclipse.iofog.ws.manager;
 
-import com.iotracks.utils.ByteUtils;
-import com.iotracks.ws.manager.listener.WebSocketManagerListener;
+import org.eclipse.iofog.utils.ByteUtils;
+import org.eclipse.iofog.ws.manager.listener.WebSocketManagerListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;

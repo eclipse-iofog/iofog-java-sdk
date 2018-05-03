@@ -1,10 +1,10 @@
-package com.iotracks.ws.manager.listener;
+package org.eclipse.iofog.ws.manager.listener;
 
-import com.iotracks.api.listener.IOFogAPIListener;
-import com.iotracks.elements.IOMessage;
-import com.iotracks.utils.ByteUtils;
-import com.iotracks.utils.IOFogLocalAPIURL;
-import com.iotracks.ws.manager.WebSocketManager;
+import org.eclipse.iofog.api.listener.IOFogAPIListener;
+import org.eclipse.iofog.elements.IOMessage;
+import org.eclipse.iofog.utils.ByteUtils;
+import org.eclipse.iofog.utils.IOFogLocalAPIURL;
+import org.eclipse.iofog.ws.manager.WebSocketManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;

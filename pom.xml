@@ -4,25 +4,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.iotracks</groupId>
-    <artifactId>container-java-sdk</artifactId>
-    <version>1.1.3</version>
+    <groupId>org.eclipse.iofog</groupId>
+    <artifactId>iofog-java-sdk</artifactId>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
-    <name>ioTracks Java SDK for Containers</name>
+    <name>Eclipse ioFog Java SDK for Containers</name>
     <description>Util classes for writing ioElements (Containers) in Java</description>
-    <url>http://www.iotracks.com/</url>
+    <url>http://iofog.org</url>
 
     <licenses>
         <license>
-            <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <name>EPL-2.0</name>
+            <url>https://www.eclipse.org/legal/epl-2.0/</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <scm>
-        <url>https://github.com/iotracks/container-sdk-java</url>
+        <url>https://github.com/ioFog/iofog-java-sdk.git</url>
     </scm>
 
     <dependencies>

@@ -1,7 +1,7 @@
-package com.iotracks.elements;
+package org.eclipse.iofog.elements;
 
-import com.iotracks.utils.ByteUtils;
-import com.iotracks.utils.IOMessageUtils;
+import org.eclipse.iofog.utils.ByteUtils;
+import org.eclipse.iofog.utils.IOMessageUtils;
 
 import javax.json.Json;
 import javax.json.JsonObject;

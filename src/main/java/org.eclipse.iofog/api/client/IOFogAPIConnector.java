@@ -1,7 +1,7 @@
-package com.iotracks.api.client;
+package org.eclipse.iofog.api.client;
 
-import com.iotracks.api.handler.IOContainerRESTAPIHandler;
-import com.iotracks.api.handler.IOContainerWSAPIHandler;
+import org.eclipse.iofog.api.handler.IOContainerRESTAPIHandler;
+import org.eclipse.iofog.api.handler.IOContainerWSAPIHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

@@ -1,10 +1,10 @@
-package com.iotracks.api;
+package org.eclipse.iofog.api;
 
-import com.iotracks.api.client.*;
-import com.iotracks.api.listener.*;
-import com.iotracks.utils.IOFogLocalAPIURL;
-import com.iotracks.elements.IOMessage;
-import com.iotracks.api.handler.*;
+import org.eclipse.iofog.api.client.*;
+import org.eclipse.iofog.api.listener.*;
+import org.eclipse.iofog.utils.IOFogLocalAPIURL;
+import org.eclipse.iofog.elements.IOMessage;
+import org.eclipse.iofog.api.handler.*;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

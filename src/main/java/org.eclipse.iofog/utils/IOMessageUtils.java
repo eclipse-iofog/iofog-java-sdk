@@ -1,4 +1,4 @@
-package com.iotracks.utils;
+package org.eclipse.iofog.utils;
 
 import java.util.Base64;
 import java.util.logging.Level;

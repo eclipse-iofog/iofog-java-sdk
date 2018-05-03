@@ -1,6 +1,6 @@
-package com.iotracks.api.client;
+package org.eclipse.iofog.api.client;
 
-import com.iotracks.api.handler.IOContainerWSAPIHandler;
+import org.eclipse.iofog.api.handler.IOContainerWSAPIHandler;
 
 import java.util.logging.Logger;
 

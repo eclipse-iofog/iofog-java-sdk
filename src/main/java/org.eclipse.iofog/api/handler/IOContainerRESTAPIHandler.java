@@ -1,7 +1,7 @@
-package com.iotracks.api.handler;
+package org.eclipse.iofog.api.handler;
 
-import com.iotracks.api.listener.IOFogAPIListener;
-import com.iotracks.elements.IOMessage;
+import org.eclipse.iofog.api.listener.IOFogAPIListener;
+import org.eclipse.iofog.elements.IOMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -13,7 +13,7 @@ import javax.json.*;
 import java.io.StringReader;
 import java.util.List;
 
-import static com.iotracks.utils.IOFogResponseUtils.*;
+import static org.eclipse.iofog.utils.IOFogResponseUtils.*;
 import static java.util.stream.Collectors.toList;
 
 
