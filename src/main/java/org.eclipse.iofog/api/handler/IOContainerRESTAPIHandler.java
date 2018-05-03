@@ -1,20 +1,20 @@
 package org.eclipse.iofog.api.handler;
 
-import org.eclipse.iofog.api.listener.IOFogAPIListener;
-import org.eclipse.iofog.elements.IOMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.eclipse.iofog.api.listener.IOFogAPIListener;
+import org.eclipse.iofog.elements.IOMessage;
 
 import javax.json.*;
 import java.io.StringReader;
 import java.util.List;
 
-import static org.eclipse.iofog.utils.IOFogResponseUtils.*;
 import static java.util.stream.Collectors.toList;
+import static org.eclipse.iofog.utils.IOFogResponseUtils.*;
 
 
 /**

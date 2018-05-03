@@ -1,23 +1,20 @@
 package org.eclipse.iofog.api;
 
-import org.eclipse.iofog.api.client.*;
-import org.eclipse.iofog.api.listener.*;
-import org.eclipse.iofog.utils.IOFogLocalAPIURL;
-import org.eclipse.iofog.elements.IOMessage;
-import org.eclipse.iofog.api.handler.*;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.internal.StringUtil;
+import org.eclipse.iofog.api.client.*;
+import org.eclipse.iofog.api.handler.*;
+import org.eclipse.iofog.api.listener.*;
+import org.eclipse.iofog.elements.IOMessage;
+import org.eclipse.iofog.utils.IOFogLocalAPIURL;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.*;
 import java.util.Date;
 import java.util.Set;
 import java.util.Timer;

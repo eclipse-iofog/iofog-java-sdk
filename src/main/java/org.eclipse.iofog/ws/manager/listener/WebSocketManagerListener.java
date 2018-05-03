@@ -1,8 +1,8 @@
 package org.eclipse.iofog.ws.manager.listener;
 
-import org.eclipse.iofog.ws.manager.WebSocketManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import org.eclipse.iofog.ws.manager.WebSocketManager;
 
 /**
  * Interface of listener for WebSocket Manager.

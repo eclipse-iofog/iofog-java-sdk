@@ -1,15 +1,15 @@
 package org.eclipse.iofog.api.handler;
 
-import org.eclipse.iofog.api.IOFogClient;
-import org.eclipse.iofog.api.listener.IOFogAPIListener;
-import org.eclipse.iofog.utils.IOFogLocalAPIURL;
-import org.eclipse.iofog.ws.manager.WebSocketManager;
-import org.eclipse.iofog.elements.IOMessage;
-import org.eclipse.iofog.ws.manager.listener.ClientWSManagerListener;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.*;
+import org.eclipse.iofog.api.IOFogClient;
+import org.eclipse.iofog.api.listener.IOFogAPIListener;
+import org.eclipse.iofog.elements.IOMessage;
+import org.eclipse.iofog.utils.IOFogLocalAPIURL;
+import org.eclipse.iofog.ws.manager.WebSocketManager;
+import org.eclipse.iofog.ws.manager.listener.ClientWSManagerListener;
 
 import java.net.URI;
 import java.util.logging.Logger;

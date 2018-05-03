@@ -1,13 +1,13 @@
 package org.eclipse.iofog.ws.manager.listener;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import org.eclipse.iofog.api.listener.IOFogAPIListener;
 import org.eclipse.iofog.elements.IOMessage;
 import org.eclipse.iofog.utils.ByteUtils;
 import org.eclipse.iofog.utils.IOFogLocalAPIURL;
 import org.eclipse.iofog.ws.manager.WebSocketManager;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.util.Arrays;
 import java.util.Collections;
