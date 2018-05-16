@@ -1,3 +1,15 @@
+/*
+ * *******************************************************************************
+ *   Copyright (c) 2018 Edgeworx, Inc.
+ *
+ *   This program and the accompanying materials are made available under the
+ *   terms of the Eclipse Public License v. 2.0 which is available at
+ *   http://www.eclipse.org/legal/epl-2.0
+ *
+ *   SPDX-License-Identifier: EPL-2.0
+ * *******************************************************************************
+ */
+
 package org.eclipse.iofog.api;
 
 import io.netty.buffer.ByteBuf;
@@ -15,6 +27,9 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Set;
 import java.util.Timer;

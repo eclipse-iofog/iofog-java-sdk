@@ -1,3 +1,15 @@
+/*
+ * *******************************************************************************
+ *   Copyright (c) 2018 Edgeworx, Inc.
+ *
+ *   This program and the accompanying materials are made available under the
+ *   terms of the Eclipse Public License v. 2.0 which is available at
+ *   http://www.eclipse.org/legal/epl-2.0
+ *
+ *   SPDX-License-Identifier: EPL-2.0
+ * *******************************************************************************
+ */
+
 package org.eclipse.iofog.ws.manager;
 
 import io.netty.buffer.ByteBuf;
@@ -7,6 +19,10 @@ import io.netty.handler.codec.http.websocketx.*;
 import org.eclipse.iofog.utils.ByteUtils;
 import org.eclipse.iofog.ws.manager.listener.WebSocketManagerListener;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
